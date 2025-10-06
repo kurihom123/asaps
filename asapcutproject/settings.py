@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'asapcutproject.urls'
@@ -81,11 +82,9 @@ DATABASES = {
         'NAME': 'asapcutdb',
         'USER': 'root',
         'PASSWORD': '',
-        'HOST': 'localhost',
+        'HOST': 'aws.connect.psdb.cloud',
         'PORT': '3306',
-        'OPTIONS': {
-            'sql_mode': 'traditional'
-        }
+        'OPTIONS': {'ssl': {'ca': '/etc/ssl/cert.pem'}},
     }
 }
 
@@ -135,3 +134,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Serve compressed static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
