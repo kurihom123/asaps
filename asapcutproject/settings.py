@@ -81,13 +81,18 @@ WSGI_APPLICATION = 'asapcutproject.wsgi.application'
 import dj_database_url
 import os
 
+import dj_database_url
+import os
+
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://asapcutdb_user:Hky67gGgsQ9BpaqlKwvbyb67bbzizLZ4@dpg-d3hs1m63jp1c73fq3e10-a.oregon-postgres.render.com/asapcutdb',
+        default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
         ssl_require=True
     )
 }
+
+
 
 
 # Password validation
