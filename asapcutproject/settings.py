@@ -79,7 +79,10 @@ WSGI_APPLICATION = 'asapcutproject.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get('postgresql://asapcutdb_user:Hky67gGgsQ9BpaqlKwvbyb67bbzizLZ4@dpg-d3hs1m63jp1c73fq3e10-a.oregon-postgres.render.com/asapcutdb'))
+    'default': dj_database_url.config(default=os.environ.get('postgresql://asapcutdb_user:Hky67gGgsQ9BpaqlKwvbyb67bbzizLZ4@dpg-d3hs1m63jp1c73fq3e10-a.oregon-postgres.render.com/asapcutdb')
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
 
 
