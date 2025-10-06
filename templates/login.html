@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-4 mt-5">
+                <div class="card card-body pt-4">
+                    <h4 class="text-center text-orange">ASAPCUT LOGIN</h4>
+                    {% include 'includes/alert.html' %}
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <!-- Name input -->
+
+                        <div class="mb-4">
+                            <label class="form-label text-success" for="username">Username</label>
+                            <input type="text" name="username" id="username" class="form-control" required/>
+                        </div>
+
+                        <!-- password input -->
+                        <div class="mb-4">
+                            <label class="form-label text-success" for="password">Password</label>
+                            <input type="password" name="password" id="password" class="form-control" required/>
+                        </div>
+                        <!-- Submit button -->
+                        <button type="submit" class="btn btn-success btn-block mb-3 form-control">Sign In</button>
+
+                        <div class="mt-3 mb-3">
+                            <a class="btn btn-outline-danger btn-block form-control" href="#"> Forgot password</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

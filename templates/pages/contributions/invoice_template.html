@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice - {{ year }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            margin: 40px;
+        }
+        .header {
+            text-align: center;
+            /* border-bottom: 1px solid #000; */
+            padding-bottom: 10px;
+        }
+        .header h2, .header h3 {
+            margin: 2px;
+        }
+        .details {
+            margin-top: 20px;
+        }
+        .section {
+            margin-top: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: left;
+        }
+        .right-align {
+            text-align: right;
+        }
+        .bold {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="text-align: right; font-weight: bold;">INVOICE</div>
+        <div style="text-align: center; margin-top: -20px;">
+            <p style="margin: 0; font-weight: bold;">ASAPUCT</p>
+            <p style="margin: 0; font-size: 20px; font-family: Impact, Arial, sans-serif;">
+                Academic Staff Association of Public Universities and Colleges of Tanzania
+            </p>
+            <p style="margin: 0; font-size: 12px;">
+                Contacts: Cell +255 754 477 486, +255 683 083 723, Email: asas.leaders2014@gmail.com
+            </p>
+        </div>
+        <hr style="border: 1px solid black; margin-top: 5px;">
+    </div>
+    
+
+    <div class="details">
+        <p><strong>BILL TO:</strong><br>The Chairperson, MUASA- MUHAS</p>
+        <p><strong>INVOICE NO:</strong> {{ invoice_number }}<br>
+        <strong>DATE:</strong> {{ current_date }}</p>
+    </div>
+
+    <div class="section">
+        <table>
+            <tr>
+                <th>PARTICULARS</th>
+                <th class="right-align">TOTAL TZS</th>
+            </tr>
+            <tr>
+                <td>New Financial Year (July {{ year }} - June {{ year }})</td>
+                <td class="right-align">{{ totals.total_allocation|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Outstanding Amount FY Ended - July {{ year }}<br>
+                    <em>({{ balance_in_words }})</em>
+                </td>
+                <td class="right-align">NIL</td>
+            </tr>
+            <tr>
+                <td class="bold">SUB-TOTAL</td>
+                <td class="right-align">{{ totals.total_allocation|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td class="bold">TAX</td>
+                <td class="right-align">NIL</td>
+            </tr>
+            <tr>
+                <td class="bold">AMOUNT DUE</td>
+                <td class="right-align">{{ totals.total_allocation|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <p>
+            Please note that as per ASAPUCT financial regulations 2017 each member of academic staff from each ASA is
+            required to pay TZS. 500 per month. It was agreed that to ease payment each ASA should affect direct payment
+            from their account to the ASAPUCT account.
+        </p>
+
+        <p><strong>Account Details:</strong> CRDB-UDOM Branch<br>
+        <strong>Account Number:</strong> [0150529491900]<br>
+        <strong>Account Holder Name:</strong> [ASAPUCT]</p>
+
+        <p>
+            This is the resolution agreed to be implemented on monthly basis or on a quarterly basis. Please let us know
+            if any additional information is required from our records.
+        </p>
+
+        <p>Thanks for your good cooperation.</p>
+
+        <p><strong>Yours;</strong><br><br>
+        Dr. Kassim Ramadhani Musa<br>
+        <strong>ASAPUCT General Secretary</strong></p>
+    </div>
+</body>
+</html>

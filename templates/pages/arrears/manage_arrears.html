@@ -1,0 +1,80 @@
+{% extends 'pages/base.html' %}
+{% load dict_extras %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Arrears Records</h3>
+  </div>
+
+  <!-- arrears summary -->
+  <div class="card mt-5">
+    <div class="card-header bg-secondary text-white">
+      <h5 class="mb-0">Total Arrears Per Association</h5>
+    </div>
+    <div class="card-body">
+      {% if has_arrears %}
+        <table class="table table-bordered table-striped">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Association</th>
+              <th>Total Arrears</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for association_abbr, total in total_arrears_by_association.items %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ association_abbr }}</td>
+                <td style="color: red;">{{ total }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <!-- Grand Total -->
+        <div class="mt-4 alert alert-info text-end">
+          <strong>Grand Total Arrears:</strong>
+          <span style="color: red;">{{ grand_total_arrears }}</span>
+        </div>
+        
+        <!-- <div class="mt-3 d-flex justify-content-end gap-2">
+            <a href="{% url 'download_pdf' %}" class="btn btn-danger">
+              <i class="bi bi-file-earmark-pdf"></i> Download PDF
+            </a>
+            <a href="{% url 'download_excel' %}" class="btn btn-success">
+              <i class="bi bi-file-earmark-excel"></i> Download Excel
+            </a>
+          </div> -->
+
+          <div class="d-flex justify-content-end mb-3 gap-2">
+            Download
+            <a href="{% url 'download_pdf' %}" target="_blank" class="btn btn-sm btn-outline-danger">
+              PDF
+            </a>
+            <a href="{% url 'download_excel' %}" class="btn btn-sm btn-outline-success">
+              Excel
+            </a>
+          </div>
+            
+      {% else %}
+        <div class="alert alert-info">
+          No arrears records available.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- jQuery for collapsible -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('.bill-header').click(function() {
+      var target = $(this).data('target');
+      $(target).slideToggle();
+    });
+  });
+</script>
+{% endblock %}

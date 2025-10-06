@@ -1,0 +1,204 @@
+{% extends 'pages/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    {% if messages %}
+    <div>
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Universities</h3>
+        <!-- add university modal trigger -->
+        <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addUniversityModal">
+            <i class="fas fa-plus"></i> Add University
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-secondary">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title text-white">University List</h5>
+                <input type="text" id="searchInput" class="form-control form-control-sm w-25" placeholder="Search...">
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped" id="datatable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>University Name</th>
+                        <th>Abbreviation</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="universityTable">
+                    {% for university in universities %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ university.name }}</td>
+                        <td>{{ university.abbr }}</td>
+                        <td>
+                            <!-- update modal trigger -->
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#updateUniversityModal-{{ university.id }}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <!-- delete modal trigger -->
+                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteUniversityModal-{{ university.id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- update modal -->
+                    <div class="modal fade {% if show_update_modal == university.id %}show{% endif %}"
+                         id="updateUniversityModal-{{ university.id }}"
+                         tabindex="-1"
+                         aria-labelledby="updateUniversityModalLabel"
+                         aria-hidden="true"
+                         style="{% if show_update_modal == university.id %}display: block;{% endif %}">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary">
+                                    <h5 class="modal-title text-white" id="updateUniversityModalLabel">Update University</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <form method="post" action="{% url 'update_university' university.id %}">
+                                    {% csrf_token %}
+                                    <div class="modal-body">
+                                        {% if update_error and show_update_modal == university.id %}
+                                        <div class="alert alert-danger">
+                                            {{ update_error }}
+                                        </div>
+                                        {% endif %}
+                                        <div class="mb-3">
+                                            <label for="universityName-{{ university.id }}" class="form-label">University Name</label>
+                                            <input type="text" class="form-control" id="universityName-{{ university.id }}" name="name" value="{{ university.name }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="abbreviation-{{ university.id }}" class="form-label">Abbreviation</label>
+                                            <input type="text" class="form-control" id="abbreviation-{{ university.id }}" name="abbr" value="{{ university.abbr }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-success">Update</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- delete modal -->
+                    <div class="modal fade" id="deleteUniversityModal-{{ university.id }}" tabindex="-1" aria-labelledby="deleteUniversityModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary">
+                                    <h5 class="modal-title text-white" id="deleteUniversityModalLabel">Delete Confirmation</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete "{{ university.name }}"?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                                    <form method="post" action="{% url 'delete_university' university.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No universities found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- sdd university modal -->
+<div class="modal fade" id="addUniversityModal" tabindex="-1" aria-labelledby="addUniversityModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <h5 class="modal-title text-white" id="addUniversityModalLabel">Add University</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'add_university' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {% if add_error %}
+                    <div class="alert alert-danger">
+                        {{ add_error }}
+                    </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label for="universityName" class="form-label">University Name</label>
+                        <input type="text" class="form-control" id="universityName" name="name" value="{{ request.POST.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="abbreviation" class="form-label">Abbreviation</label>
+                        <input type="text" class="form-control" id="abbreviation" name="abbr" value="{{ request.POST.abbr }}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Adding</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // search functionality
+    document.getElementById('searchInput').addEventListener('input', function () {
+        const filter = this.value.toLowerCase();
+        document.querySelectorAll('#universityTable tr').forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+        });
+    });
+
+    // automatically open the add aniversity modal if there's an error
+    {% if add_error %}
+    document.addEventListener('DOMContentLoaded', function () {
+        var addModal = new bootstrap.Modal(document.getElementById('addUniversityModal'));
+        addModal.show();
+
+        // reinitialize dismissal buttons to ensure they work after programmatically showing the modal
+        document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
+            button.addEventListener('click', function () {
+                addModal.hide();
+            });
+        });
+    });
+    {% endif %}
+
+    // automatically open the update university modal if there's an error
+    {% if show_update_modal %}
+    document.addEventListener('DOMContentLoaded', function () {
+        var updateModal = new bootstrap.Modal(document.getElementById('updateUniversityModal-{{ show_update_modal }}'));
+        updateModal.show();
+
+        // reinitialize dismissal buttons to ensure they work after programmatically showing the modal
+        document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
+            button.addEventListener('click', function () {
+                updateModal.hide();
+            });
+        });
+    });
+    {% endif %}
+</script>
+
+{% endblock %}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contributions for {{ year }}</title>
+    <style>
+        body { font-family: Arial; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
+</head>
+<body>
+    <h2>Contribution List - {{ year }}</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Association</th>
+                <th>Members</th>
+                <th>Amount Paid</th>
+                <th>Allocation</th>
+                <th>Payment Date</th>
+                <th>Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in contributions %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ c.association.abbr }}</td>
+                <td>{{ c.association.member_number }}</td>
+                <td>{{ c.amount_paid }}</td>
+                <td>{{ c.allocation }}</td>
+                <td>{{ c.payment_date }}</td>
+                <td>{{ c.balance }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p><strong>Total Members:</strong> {{ total.members }}</p>
+    <p><strong>Total Paid:</strong> {{ total.paid }}</p>
+    <p><strong>Total Allocation:</strong> {{ total.allocation }}</p>
+    <p><strong>Total Balance:</strong> {{ total.balance }}</p>
+</body>
+</html>
