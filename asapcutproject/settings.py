@@ -77,15 +77,7 @@ WSGI_APPLICATION = 'asapcutproject.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'asapcutdb',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'aws.connect.psdb.cloud',
-        'PORT': '3306',
-        'OPTIONS': {'ssl': {'ca': '/etc/ssl/cert.pem'}},
-    }
+    'default': dj_database_url.config(default=os.environ.get('postgresql://asapcutdb_user:Hky67gGgsQ9BpaqlKwvbyb67bbzizLZ4@dpg-d3hs1m63jp1c73fq3e10-a.oregon-postgres.render.com/asapcutdb'))
 }
 
 
