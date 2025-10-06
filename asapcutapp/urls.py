@@ -13,7 +13,7 @@ from .views.association import association_list, add_association, update_associa
 from .views.contribution import contribution_list, add_contribution_for_year, contributions_pdf, contributions_excel
 
 urlpatterns = [
-    path('', index, name='index'),
+    path('/index', index, name='index'),
     path('/login', login_view, name='login'),
     path('dashboard/', dashboard, name='dashboard'),
     path('login/', user_logout, name='user_logout'),
