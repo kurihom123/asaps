@@ -146,7 +146,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Redirect unauthenticated users to your actual login page
-LOGIN_URL = '/login/'
+LOGIN_URL = '/'
 
 # Optional: where to go after successful login
 LOGIN_REDIRECT_URL = '/dashboard/'
