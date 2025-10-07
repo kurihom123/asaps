@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 from .views.invoice import invoice_pdf
 
 from .views.arrears import arrears_list, download_excel, download_pdf
-from .views.index_view import index
+from .views.base_view import base
 from .views.authentication import login_view, user_logout
 from .views.dashboard import dashboard
 from .views.universities import university_list, add_university, update_university, delete_university
@@ -13,8 +13,8 @@ from .views.association import association_list, add_association, update_associa
 from .views.contribution import contribution_list, add_contribution_for_year, contributions_pdf, contributions_excel
 
 urlpatterns = [
-    path('', login_view, name='login'),
-    path('index/', index, name='index'),
+    path('', base, name='base'),
+    path('login/', login_view, name='login'),
     path('dashboard/', dashboard, name='dashboard'),
     path('login/', user_logout, name='user_logout'),
 
