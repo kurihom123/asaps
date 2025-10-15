@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-users me-2"></i>
+                <h5 class="mb-0 d-inline">All Users</h5>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark text-center">
+                        <tr>
+                            <th>Photo</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Level</th>
+                            <th>Position</th>
+                            <th>Association</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr class="text-center">
+                            <td>
+                                {% if user.photo %}
+                                    <img src="{{ user.photo.url }}" alt="User photo" class="rounded-circle" width="50" height="50">
+                                {% else %}
+                                    <i class="fas fa-user-circle fa-2x text-secondary"></i>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.user.first_name }} {{ user.user.last_name }}</td>
+                            <td><i class="fas fa-envelope text-primary"></i> {{ user.user.email }}</td>
+                            <td><i class="fas fa-phone text-success"></i> {{ user.phone }}</td>
+                            <td><i class="fas fa-graduation-cap text-warning"></i> {{ user.level.abbr }}</td>
+                            <td><i class="fas fa-user-tie text-info"></i> {{ user.position.name }}</td>
+                            <td><i class="fas fa-university text-danger"></i> {{ user.association.abbr }}</td>
+                            <td>
+                                <a href="{% url 'update_user' user.id %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
