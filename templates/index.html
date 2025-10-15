@@ -98,68 +98,51 @@
 
                 <!-- Leaders Section -->
                 <div class="row justify-content-center align-items-start">
-                    <!-- President -->
+                    <!-- PRESIDENT -->
                     <div class="col-12 text-center mb-4">
-                        <div class="card-body">
-                            <img src="{{ leaders.3.photo.url }}" alt="Leader Photo" class="leader-img mx-auto mb-3" />
-                            <h6 class="card-title fw-bold text-white">
-                                {{ leaders.2.level.abbr }}. {{ leaders.2.user.first_name }} {{ leaders.2.user.last_name }} ({{ leaders.2.association.abbr }})
-                            </h6>
-                            <div class="fading-line"></div>
-                            <p class="card-text" style="color: #e7c905">
-                                <strong>{{ leaders.2.position.name }}</strong>
-                            </p>
-                        </div>
+                        <img src="{{ president.photo.url }}" alt="Leader Photo" class="leader-img mx-auto mb-3" />
+                        <h6 class="card-title fw-bold text-white">
+                            {{ president.level.abbr }}. {{ president.user.first_name }} {{ president.user.last_name }} ({{ president.association.abbr }})
+                        </h6>
+                        <div class="fading-line"></div>
+                        <p class="card-text" style="color: #e7c905"><strong>{{ president.position.name }}</strong></p>
                     </div>
 
-                    <!-- Left and Right Columns -->
+                    <!-- VICE PRESIDENT & DEPUTY SECRETARY -->
                     <div class="d-flex justify-content-center gap-4">
-                        <!-- Left Column -->
                         <div class="col-lg-5 col-md-5 text-center">
-                            <div class="card-body">
-                                <img src="{{ leaders.3.photo.url }}" alt="Leader Photo" class="leader-img mx-auto mb-3" />
-                                <h6 class="card-title fw-bold text-white">
-                                    {{ leaders.3.level.abbr }}. {{ leaders.3.user.first_name }} {{ leaders.3.user.last_name }} ({{ leaders.3.association.abbr }})
-                                </h6>
-                                <div class="fading-line"></div>
-                                <p class="card-text" style="color: #e7c905">
-                                    <strong>{{ leaders.3.position.name }}</strong>
-                                </p>
-                            </div>
-                            <div class="card-body">
-                                <img src="{{ leaders.1.photo.url }}" alt="Leader Photo" class="leader-img mx-auto mb-3" />
-                                <h6 class="card-title fw-bold text-white">
-                                    {{ leaders.1.level.abbr }}. {{ leaders.1.user.first_name }} {{ leaders.1.user.last_name }} ({{ leaders.1.association.abbr }})
-                                </h6>
-                                <div class="fading-line"></div>
-                                <p class="card-text" style="color: #e7c905">
-                                    <strong>{{ leaders.1.position.name }}</strong>
-                                </p>
-                            </div>
+                            <img src="{{ vice_president.photo.url }}" class="leader-img mx-auto mb-3" />
+                            <h6 class="card-title fw-bold text-white">
+                                {{ vice_president.level.abbr }}. {{ vice_president.user.first_name }} {{ vice_president.user.last_name }} ({{ vice_president.association.abbr }})
+                            </h6>
+                            <div class="fading-line"></div>
+                            <p class="card-text" style="color: #e7c905"><strong>{{ vice_president.position.name }}</strong></p>
+
+                            <br>
+                            <img src="{{ deputy_secretary.photo.url }}" class="leader-img mx-auto mb-3" />
+                            <h6 class="card-title fw-bold text-white">
+                                {{ deputy_secretary.level.abbr }}. {{ deputy_secretary.user.first_name }} {{ deputy_secretary.user.last_name }} ({{ deputy_secretary.association.abbr }})
+                            </h6>
+                            <div class="fading-line"></div>
+                            <p class="card-text" style="color: #e7c905"><strong>{{ deputy_secretary.position.name }}</strong></p>
                         </div>
 
-                        <!-- Right Column -->
+                        <!-- GENERAL SECRETARY & TREASURER -->
                         <div class="col-lg-5 col-md-5 text-center">
-                            <div class="card-body">
-                                <img src="{{ leaders.4.photo.url }}" alt="Leader Photo" class="leader-img mx-auto mb-3" />
-                                <h6 class="card-title fw-bold text-white">
-                                    {{ leaders.4.level.abbr }}. {{ leaders.4.user.first_name }} {{ leaders.4.user.last_name }} ({{ leaders.4.association.abbr }})
-                                </h6>
-                                <div class="fading-line"></div>
-                                <p class="card-text" style="color: #e7c905">
-                                    <strong>{{ leaders.4.position.name }}</strong>
-                                </p>
-                            </div>
-                            <div class="card-body">
-                                <img src="{{ leaders.0.photo.url }}" alt="Leader Photo" class="leader-img mx-auto mb-3" />
-                                <h6 class="card-title fw-bold text-white">
-                                    {{ leaders.0.level.abbr }}. {{ leaders.0.user.first_name }} {{ leaders.0.user.last_name }} ({{ leaders.0.association.abbr }})
-                                </h6>
-                                <div class="fading-line"></div>
-                                <p class="card-text" style="color: #e7c905">
-                                    <strong>{{ leaders.0.position.name }}</strong>
-                                </p>
-                            </div>
+                            <img src="{{ general_secretary.photo.url }}" class="leader-img mx-auto mb-3" />
+                            <h6 class="card-title fw-bold text-white">
+                                {{ general_secretary.level.abbr }}. {{ general_secretary.user.first_name }} {{ general_secretary.user.last_name }} ({{ general_secretary.association.abbr }})
+                            </h6>
+                            <div class="fading-line"></div>
+                            <p class="card-text" style="color: #e7c905"><strong>{{ general_secretary.position.name }}</strong></p>
+
+                            <br>
+                            <img src="{{ treasurer.photo.url }}" class="leader-img mx-auto mb-3" />
+                            <h6 class="card-title fw-bold text-white">
+                                {{ treasurer.level.abbr }}. {{ treasurer.user.first_name }} {{ treasurer.user.last_name }} ({{ treasurer.association.abbr }})
+                            </h6>
+                            <div class="fading-line"></div>
+                            <p class="card-text" style="color: #e7c905"><strong>{{ treasurer.position.name }}</strong></p>
                         </div>
                     </div>
                 </div>
