@@ -31,7 +31,7 @@ class UserProfile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_profile')
     level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='user_level', null=True)
     association = models.ForeignKey(Association, on_delete=models.CASCADE, related_name='user_profile_association')
-    position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name='user_profile_position')
+    position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name='user_profile_position', default='leader')
 
     class Meta:
         db_table = 'user_profile'
