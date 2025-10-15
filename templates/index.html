@@ -9,55 +9,192 @@
         <meta name="author" content="" />
         <title>ASAPUCT</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
         <style>
-            .leader-img {
+            :root {
+                --primary-blue: #0f79f3;
+                --secondary-yellow: #e7c905;
+                --accent-green: #17ce1a;
+                --dark-bg: #4796f1;
+                --light-bg: #f6f4f4;
+                --white: #ffffff;
+            }
 
+            body {
+                background: var(--light-bg);
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+
+            .leader-img {
                 border-radius: 60%;
                 width: 130px;
                 height: 130px;
                 object-fit: cover;
                 padding: 5px;
-                border: 3px solid #e3d057;
+                border: 3px solid var(--secondary-yellow);
+                transition: all 0.3s ease;
+                cursor: pointer;
             }
-            .top-card {
-                background-color: #ffffff;
-                color: #0f79f3;
-                padding: 15px;
-                text-align: center;
-            }
-            .title-card {
-                background-color: #e7c905;
-                color: #0f79f3;
-                margin: 10px 0;
 
+            .leader-img:hover {
+                transform: scale(1.05);
+                border-color: var(--primary-blue);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            .top-card {
+                background: linear-gradient(135deg, var(--white) 0%, #e3f2fd 100%);
+                color: var(--primary-blue);
+                padding: 20px;
+                text-align: center;
+                border-radius: 15px 15px 0 0;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                border: 1px solid #e0e0e0;
+            }
+
+            .title-card {
+                background: linear-gradient(135deg, var(--secondary-yellow) 0%, #f8e71c 100%);
+                color: var(--primary-blue);
+                margin: 10px 0;
                 padding: 15px;
                 text-align: center;
+                position: relative;
+                overflow: hidden;
             }
+
+            .title-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+                transition: left 0.5s;
+            }
+
+            .title-card:hover::before {
+                left: 100%;
+            }
+
             .horizontal-line {
                 height: 6px;
-                background-color: #0d6efd;
+                transition: all 0.3s ease;
             }
+
+            .horizontal-line:hover {
+                transform: scaleY(1.5);
+            }
+
             .fading-line {
                 height: 2px;
-                width: 40%; /* Adjust the width percentage to control the line length */
-                margin: 10px auto; /* Centers the line horizontally */
-                background: linear-gradient(to right, transparent, #e7c905, transparent);
+                width: 40%;
+                margin: 10px auto;
+                background: linear-gradient(to right, transparent, var(--secondary-yellow), transparent);
+                transition: width 0.3s ease;
             }
-            .line-blue { background-color: #17ce1a; }
-            .line-yellow { background-color: #f1d419; }
-            .line-green { background-color: #070606; }
-            .line-red { background-color: #f1d419; }
+
+            .leader-card:hover .fading-line {
+                width: 60%;
+            }
+
+            .line-blue { background-color: var(--primary-blue); }
+            .line-yellow { background-color: var(--secondary-yellow); }
+            .line-green { background-color: var(--accent-green); }
+            .line-red { background-color: #ff6b6b; }
             .no-margin { margin: 0; }
+
+            .leader-card {
+                transition: all 0.3s ease;
+                padding: 15px;
+                border-radius: 10px;
+            }
+
+            .leader-card:hover {
+                background: rgba(255, 255, 255, 0.1);
+                transform: translateY(-5px);
+            }
+
+            .association-logo {
+                transition: all 0.3s ease;
+                filter: grayscale(30%);
+                max-height: 60px;
+            }
+
+            .association-logo:hover {
+                transform: scale(1.1);
+                filter: grayscale(0%);
+            }
+
+            .dropdown-menu {
+                border: none;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border-radius: 10px;
+            }
+
+            .dropdown-item {
+                transition: all 0.2s ease;
+                border-radius: 5px;
+                margin: 2px 5px;
+            }
+
+            .dropdown-item:hover {
+                background: var(--primary-blue);
+                color: white;
+                transform: translateX(5px);
+            }
+
+            .pulse-animation {
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+
+            .typewriter {
+                overflow: hidden;
+                border-right: 2px solid var(--primary-blue);
+                white-space: nowrap;
+                margin: 0 auto;
+                animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+            }
+
+            @keyframes typing {
+                from { width: 0 }
+                to { width: 100% }
+            }
+
+            @keyframes blink-caret {
+                from, to { border-color: transparent }
+                50% { border-color: var(--primary-blue) }
+            }
+
+            .floating {
+                animation: floating 3s ease-in-out infinite;
+            }
+
+            @keyframes floating {
+                0% { transform: translate(0, 0px); }
+                50% { transform: translate(0, -8px); }
+                100% { transform: translate(0, 0px); }
+            }
+
+            .count-up {
+                font-weight: bold;
+                color: var(--primary-blue);
+            }
         </style>
     </head>
-    <body style="background: #f6f4f4">
+    <body>
         <div class="container py-4">
             <!-- Top Card for Title -->
             <div class="top-card">
-                <h4 class="fw-bold">
+                <h4 class="fw-bold typewriter">
                     Academic Staff Association of Public Universities <br> and Colleges of Tanzania (ASAPUCT)
                 </h4>
-
             </div>
 
             <!-- Four Horizontal Lines -->
@@ -66,12 +203,12 @@
             <div class="horizontal-line line-green no-margin"></div>
             <div class="horizontal-line line-red no-margin"></div>
 
-            <div class="mt-0" style="background: #4796f1">
+            <div class="mt-0" style="background: var(--dark-bg); border-radius: 0 0 15px 15px;">
                 <!-- Title Card for Leadership -->
-               <div class="title-card d-flex justify-content-between align-items-center">
-        <!-- Centered Title -->
-                    <h5 class="fw-bold text-uppercase mb-0 text-center flex-grow-1" style="color: #0f79f3">
-                        ASAPUCT Leadership 2024-2026
+                <div class="title-card d-flex justify-content-between align-items-center">
+                    <!-- Centered Title -->
+                    <h5 class="fw-bold text-uppercase mb-0 text-center flex-grow-1" style="color: var(--primary-blue)">
+                        <i class="fas fa-users me-2"></i>ASAPUCT Leadership 2024-2026
                     </h5>
 
                     <!-- Dropdown Menu -->
@@ -84,78 +221,94 @@
                             aria-expanded="false"
                             style="font-size: 0.9rem; font-weight: 600;"
                         >
-                            More Links <i class="ms-2 bi bi-chevron-down" style="font-size: 1rem;"></i>
+                            <i class="fas fa-link me-2"></i>More Links <i class="ms-2 fas fa-chevron-down" style="font-size: 1rem;"></i>
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink" style="min-width: 200px; font-size: 0.9rem;">
-                            <li><a class="dropdown-item" href="#link1">Leadership Overview</a></li>
-                            <li><a class="dropdown-item" href="#link2">Vision & Mission</a></li>
-                            <li><a class="dropdown-item" href="{% url 'login' %}">ASAPCUTMS</a></li>
+                            <li><a class="dropdown-item" href="#leadership"><i class="fas fa-user-tie me-2"></i>Leadership Overview</a></li>
+                            <li><a class="dropdown-item" href="#vision"><i class="fas fa-bullseye me-2"></i>Vision & Mission</a></li>
+                            <li><a class="dropdown-item" href="{% url 'login' %}"><i class="fas fa-sign-in-alt me-2"></i>ASAPCUTMS</a></li>
                         </ul>
                     </div>
                 </div>
 
-
-
                 <!-- Leaders Section -->
-                <div class="row justify-content-center align-items-start">
+                <div class="row justify-content-center align-items-start p-4">
                     <!-- PRESIDENT -->
-                    <div class="col-12 text-center mb-4">
-                        <img src="{{ president.photo.url }}" alt="Leader Photo" class="leader-img mx-auto mb-3" />
+                    <div class="col-12 text-center mb-4 leader-card">
+                        <img src="{{ president.photo.url }}" alt="Leader Photo" class="leader-img mx-auto mb-3 floating" />
                         <h6 class="card-title fw-bold text-white">
-                            {{ president.level.abbr }}. {{ president.user.first_name }} {{ president.user.last_name }} ({{ president.association.abbr }})
+                            <i class="fas fa-star me-1"></i>{{ president.level.abbr }}. {{ president.user.first_name }} {{ president.user.last_name }} ({{ president.association.abbr }})
                         </h6>
                         <div class="fading-line"></div>
-                        <p class="card-text" style="color: #e7c905"><strong>{{ president.position.name }}</strong></p>
+                        <p class="card-text" style="color: var(--secondary-yellow)">
+                            <strong><i class="fas fa-crown me-1"></i>{{ president.position.name }}</strong>
+                        </p>
                     </div>
 
                     <!-- VICE PRESIDENT & DEPUTY SECRETARY -->
-                    <div class="d-flex justify-content-center gap-4">
+                    <div class="d-flex justify-content-center gap-4 flex-wrap">
                         <div class="col-lg-5 col-md-5 text-center">
-                            <img src="{{ vice_president.photo.url }}" class="leader-img mx-auto mb-3" />
-                            <h6 class="card-title fw-bold text-white">
-                                {{ vice_president.level.abbr }}. {{ vice_president.user.first_name }} {{ vice_president.user.last_name }} ({{ vice_president.association.abbr }})
-                            </h6>
-                            <div class="fading-line"></div>
-                            <p class="card-text" style="color: #e7c905"><strong>{{ vice_president.position.name }}</strong></p>
+                            <div class="leader-card">
+                                <img src="{{ vice_president.photo.url }}" class="leader-img mx-auto mb-3" />
+                                <h6 class="card-title fw-bold text-white">
+                                    <i class="fas fa-award me-1"></i>{{ vice_president.level.abbr }}. {{ vice_president.user.first_name }} {{ vice_president.user.last_name }} ({{ vice_president.association.abbr }})
+                                </h6>
+                                <div class="fading-line"></div>
+                                <p class="card-text" style="color: var(--secondary-yellow)">
+                                    <strong><i class="fas fa-user-check me-1"></i>{{ vice_president.position.name }}</strong>
+                                </p>
+                            </div>
 
-                            <br>
-                            <img src="{{ deputy_secretary.photo.url }}" class="leader-img mx-auto mb-3" />
-                            <h6 class="card-title fw-bold text-white">
-                                {{ deputy_secretary.level.abbr }}. {{ deputy_secretary.user.first_name }} {{ deputy_secretary.user.last_name }} ({{ deputy_secretary.association.abbr }})
-                            </h6>
-                            <div class="fading-line"></div>
-                            <p class="card-text" style="color: #e7c905"><strong>{{ deputy_secretary.position.name }}</strong></p>
+                            <div class="leader-card mt-4">
+                                <img src="{{ deputy_secretary.photo.url }}" class="leader-img mx-auto mb-3" />
+                                <h6 class="card-title fw-bold text-white">
+                                    <i class="fas fa-award me-1"></i>{{ deputy_secretary.level.abbr }}. {{ deputy_secretary.user.first_name }} {{ deputy_secretary.user.last_name }} ({{ deputy_secretary.association.abbr }})
+                                </h6>
+                                <div class="fading-line"></div>
+                                <p class="card-text" style="color: var(--secondary-yellow)">
+                                    <strong><i class="fas fa-user-check me-1"></i>{{ deputy_secretary.position.name }}</strong>
+                                </p>
+                            </div>
                         </div>
 
                         <!-- GENERAL SECRETARY & TREASURER -->
                         <div class="col-lg-5 col-md-5 text-center">
-                            <img src="{{ general_secretary.photo.url }}" class="leader-img mx-auto mb-3" />
-                            <h6 class="card-title fw-bold text-white">
-                                {{ general_secretary.level.abbr }}. {{ general_secretary.user.first_name }} {{ general_secretary.user.last_name }} ({{ general_secretary.association.abbr }})
-                            </h6>
-                            <div class="fading-line"></div>
-                            <p class="card-text" style="color: #e7c905"><strong>{{ general_secretary.position.name }}</strong></p>
+                            <div class="leader-card">
+                                <img src="{{ general_secretary.photo.url }}" class="leader-img mx-auto mb-3" />
+                                <h6 class="card-title fw-bold text-white">
+                                    <i class="fas fa-award me-1"></i>{{ general_secretary.level.abbr }}. {{ general_secretary.user.first_name }} {{ general_secretary.user.last_name }} ({{ general_secretary.association.abbr }})
+                                </h6>
+                                <div class="fading-line"></div>
+                                <p class="card-text" style="color: var(--secondary-yellow)">
+                                    <strong><i class="fas fa-user-check me-1"></i>{{ general_secretary.position.name }}</strong>
+                                </p>
+                            </div>
 
-                            <br>
-                            <img src="{{ treasurer.photo.url }}" class="leader-img mx-auto mb-3" />
-                            <h6 class="card-title fw-bold text-white">
-                                {{ treasurer.level.abbr }}. {{ treasurer.user.first_name }} {{ treasurer.user.last_name }} ({{ treasurer.association.abbr }})
-                            </h6>
-                            <div class="fading-line"></div>
-                            <p class="card-text" style="color: #e7c905"><strong>{{ treasurer.position.name }}</strong></p>
+                            <div class="leader-card mt-4">
+                                <img src="{{ treasurer.photo.url }}" class="leader-img mx-auto mb-3" />
+                                <h6 class="card-title fw-bold text-white">
+                                    <i class="fas fa-award me-1"></i>{{ treasurer.level.abbr }}. {{ treasurer.user.first_name }} {{ treasurer.user.last_name }} ({{ treasurer.association.abbr }})
+                                </h6>
+                                <div class="fading-line"></div>
+                                <p class="card-text" style="color: var(--secondary-yellow)">
+                                    <strong><i class="fas fa-user-check me-1"></i>{{ treasurer.position.name }}</strong>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Footer with Associations -->
-            <div class="mt-4 text-center" style="background: #ffffff">
-                <h6 class="fw-bold text-primary">ASAPUCT Member Associations</h6>
-                <div class="d-flex justify-content-center flex-wrap">
+            <div class="mt-4 text-center p-4" style="background: var(--white); border-radius: 15px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                <h6 class="fw-bold text-primary mb-3">
+                    <i class="fas fa-university me-2"></i>ASAPUCT Member Associations
+                </h6>
+                <div class="d-flex justify-content-center flex-wrap" id="associations-container">
                     {% for association in associations %}
-                    <div class="m-2">
-                        <img src="{{ association.logo.url }}" alt="{{ association.name }}" class="img-fluid" style="max-height: 60px;">
-                        <p class="text-secondary small mt-1">{{ association.abbr }}</p>
+                    <div class="m-3 association-item">
+                        <img src="{{ association.logo.url }}" alt="{{ association.name }}" class="association-logo img-fluid">
+                        <p class="text-secondary small mt-2 count-up" data-count="{{ association.member_number }}">0+ Members</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -163,5 +316,122 @@
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Add hover effects to leader cards
+                const leaderCards = document.querySelectorAll('.leader-card');
+                leaderCards.forEach(card => {
+                    card.addEventListener('mouseenter', function() {
+                        this.style.transform = 'translateY(-5px)';
+                    });
+                    
+                    card.addEventListener('mouseleave', function() {
+                        this.style.transform = 'translateY(0)';
+                    });
+                });
+
+                // Animate association logos on scroll
+                const observerOptions = {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                };
+
+                const observer = new IntersectionObserver(function(entries) {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                        }
+                    });
+                }, observerOptions);
+
+                // Animate association items
+                const associationItems = document.querySelectorAll('.association-item');
+                associationItems.forEach((item, index) => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateY(20px)';
+                    item.style.transition = `all 0.5s ease ${index * 0.1}s`;
+                    observer.observe(item);
+                });
+
+                // Count up animation for member numbers
+                const countElements = document.querySelectorAll('.count-up');
+                countElements.forEach(element => {
+                    const target = parseInt(element.getAttribute('data-count'));
+                    const duration = 2000; // 2 seconds
+                    const step = target / (duration / 16); // 60fps
+                    let current = 0;
+                    
+                    const timer = setInterval(() => {
+                        current += step;
+                        if (current >= target) {
+                            current = target;
+                            clearInterval(timer);
+                        }
+                        element.textContent = Math.floor(current) + '+ Members';
+                    }, 16);
+                });
+
+                // Add click effect to leader images
+                const leaderImages = document.querySelectorAll('.leader-img');
+                leaderImages.forEach(img => {
+                    img.addEventListener('click', function() {
+                        this.classList.toggle('pulse-animation');
+                        setTimeout(() => {
+                            this.classList.remove('pulse-animation');
+                        }, 2000);
+                    });
+                });
+
+                // Smooth scroll for dropdown links
+                document.querySelectorAll('.dropdown-item[href^="#"]').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const targetId = this.getAttribute('href');
+                        const targetElement = document.querySelector(targetId);
+                        if (targetElement) {
+                            targetElement.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    });
+                });
+
+                // Add parallax effect to horizontal lines on scroll
+                window.addEventListener('scroll', function() {
+                    const scrolled = window.pageYOffset;
+                    const lines = document.querySelectorAll('.horizontal-line');
+                    
+                    lines.forEach((line, index) => {
+                        const rate = scrolled * -0.1 * (index + 1);
+                        line.style.transform = `translate3d(0px, ${rate}px, 0px) scaleY(${1 + Math.abs(rate * 0.001)})`;
+                    });
+                });
+
+                // Dynamic background color change for title card
+                const titleCard = document.querySelector('.title-card');
+                let hue = 45; // Starting yellow hue
+                
+                function updateBackground() {
+                    hue = (hue + 0.5) % 360;
+                    titleCard.style.background = `linear-gradient(135deg, hsl(${hue}, 95%, 50%) 0%, hsl(${hue + 20}, 95%, 60%) 100%)`;
+                    requestAnimationFrame(updateBackground);
+                }
+                
+                // Uncomment the line below to enable dynamic background color (can be intense)
+                // requestAnimationFrame(updateBackground);
+            });
+
+            // Add loading animation
+            window.addEventListener('load', function() {
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.5s ease';
+                
+                setTimeout(() => {
+                    document.body.style.opacity = '1';
+                }, 100);
+            });
+        </script>
     </body>
 </html>
