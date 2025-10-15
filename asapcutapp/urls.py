@@ -11,7 +11,7 @@ from .views.dashboard import dashboard
 from .views.universities import university_list, add_university, update_university, delete_university
 from .views.association import association_list, add_association, update_association, delete_association
 from .views.contribution import contribution_list, add_contribution_for_year, contributions_pdf, contributions_excel
-from .users_list import users_list
+from .views.users_list import users_list
 
 
 urlpatterns = [
@@ -42,7 +42,7 @@ urlpatterns = [
     path('arrears/download/pdf/', download_pdf, name='download_pdf'),
     path('arrears/download/excel/', download_excel, name='download_excel'),
     path('invoice/<str:year>/', invoice_pdf, name='invoice_pdf'),
-    path('users/', views.users_list, name='users_list'),
+    path('users/', users_list, name='users_list'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
