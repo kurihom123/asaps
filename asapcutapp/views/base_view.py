@@ -3,7 +3,7 @@ from ..models.organization_model import Association
 from ..models.user_model import UserProfile
 
 def base(request):
-     context = {
+    context = {
         'president': UserProfile.objects.filter(position__name__icontains='President').first(),
         'vice_president': UserProfile.objects.filter(position__name__icontains='Vice President').first(),
         'general_secretary': UserProfile.objects.filter(position__name__icontains='General Secretary').first(),
