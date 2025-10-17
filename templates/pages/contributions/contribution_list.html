@@ -41,9 +41,7 @@
     <div class="card mb-4 shadow-sm border-0 contribution-card">
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center toggle-header"
              style="cursor: pointer;" 
-             data-bs-toggle="collapse" 
-             data-bs-target="#year-{{ forloop.counter }}"
-             aria-expanded="true">
+             data-target="#year-{{ forloop.counter }}">
             <h5 class="mb-0">
                 <i class="fa fa-calendar"></i> Bills for {{ year }}
             </h5>
@@ -61,7 +59,7 @@
             </div>
         </div>
 
-        <div id="year-{{ forloop.counter }}" class="collapse show">
+        <div id="year-{{ forloop.counter }}" class="collapsible-content show">
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped mb-0 align-middle text-center fixed-table">
@@ -126,43 +124,44 @@
 </div>
 
 <!-- SCRIPTS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-$(document).ready(function() {
-    // Auto-dismiss alerts
-    $('.auto-dismiss').each(function() {
-        var $alert = $(this);
-        setTimeout(function() {
-            $alert.alert('close');
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide alert messages after 4 seconds
+    const alerts = document.querySelectorAll('.auto-dismiss');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
         }, 4000);
     });
 
-    // Handle collapse events for icon rotation
-    $('.toggle-header').on('click', function() {
-        var target = $(this).data('bs-target');
-        var $icon = $(this).find('.toggle-icon');
-        
-        // Wait for Bootstrap collapse to complete, then update icon
-        setTimeout(function() {
-            if ($(target).hasClass('show')) {
-                $icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+    // 🔽 Toggle table visibility when clicking card header
+    document.querySelectorAll('.toggle-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const target = document.querySelector(this.getAttribute('data-target'));
+            const icon = this.querySelector('.toggle-icon');
+
+            if (target.classList.contains('show')) {
+                target.classList.remove('show');
+                icon.style.transform = 'rotate(-90deg)';
             } else {
-                $icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+                target.classList.add('show');
+                icon.style.transform = 'rotate(0deg)';
             }
-        }, 350);
+        });
     });
 
     // Initialize all icons based on current state
-    $('.toggle-header').each(function() {
-        var target = $(this).data('bs-target');
-        var $icon = $(this).find('.toggle-icon');
+    document.querySelectorAll('.toggle-header').forEach(header => {
+        const target = document.querySelector(header.getAttribute('data-target'));
+        const icon = header.querySelector('.toggle-icon');
         
-        if ($(target).hasClass('show')) {
-            $icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+        if (target.classList.contains('show')) {
+            icon.style.transform = 'rotate(0deg)';
         } else {
-            $icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+            icon.style.transform = 'rotate(-90deg)';
         }
     });
 });
@@ -229,14 +228,23 @@ $(document).ready(function() {
     text-align: center;
 }
 
+/* Collapsible content styling */
+.collapsible-content {
+    transition: all 0.3s ease-in-out;
+    overflow: hidden;
+}
+
+.collapsible-content:not(.show) {
+    display: none;
+}
+
+.collapsible-content.show {
+    display: block;
+}
+
 /* Table responsive container */
 .table-responsive {
     overflow-x: auto;
-}
-
-/* Smooth collapse transitions */
-.collapse {
-    transition: all 0.3s ease-in-out;
 }
 
 /* Card header hover effect */
@@ -247,6 +255,7 @@ $(document).ready(function() {
 /* Icon transition */
 .toggle-icon {
     transition: transform 0.3s ease;
+    display: inline-block;
 }
 
 /* Ensure consistent card behavior */
@@ -281,6 +290,10 @@ $(document).ready(function() {
     
     .table-responsive {
         border: 1px solid #dee2e6;
+    }
+    
+    .toggle-header h5 {
+        font-size: 1rem;
     }
 }
 </style>
