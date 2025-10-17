@@ -10,9 +10,8 @@ from .views.authentication import login_view, user_logout
 from .views.dashboard import dashboard
 from .views.universities import university_list, add_university, update_university, delete_university
 from .views.association import association_list, add_association, update_association, delete_association
-from .views.contribution import contribution_list, add_contribution_for_year, contributions_pdf, contributions_excel
+from .views.contribution import contribution_list, handle_excel_upload, contributions_pdf, contributions_excel
 from .views.users_list import users_list
-from .views.upload_contribution_excel import handle_excel_upload
 
 urlpatterns = [
     path('', base, name='base'),
@@ -31,7 +30,6 @@ urlpatterns = [
     path('associations/<int:id>/delete/', delete_association, name='delete_association'),
 
     path('contributions/', contribution_list, name='contribution_list'),
-    path('add/<str:year>/', add_contribution_for_year, name='add_contribution_for_year'),
 
     path('contributions/export/pdf/<str:year>/', contributions_pdf, name='contributions_pdf'),
     path('contributions/export/excel/<str:year>/', contributions_excel, name='contributions_excel'),

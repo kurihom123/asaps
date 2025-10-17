@@ -1,7 +1,6 @@
-# views.py
 from django.shortcuts import render, redirect
-from ..models import Contribution
-from ..forms import ContributionForm, ContributionFormYear
+from ..models import Contribution, Association, ContributionUpload
+from ..forms import ExcelUploadForm
 from django.db.models import Sum
 from collections import defaultdict
 from django.contrib import messages
@@ -11,33 +10,20 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 from django.http import HttpResponse
 from xhtml2pdf import pisa
+import pandas as pd
+from datetime import datetime
 
 @login_required
 def contribution_list(request):
-    if request.method == 'POST':
-        form = ContributionForm(request.POST)
+    if request.method == 'POST' and 'excel_file' in request.FILES:
+        form = ExcelUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            contribution = form.save(commit=False)
-            member_number = contribution.association.member_number
-            contribution.allocation = member_number * 500 * 12
-            
-            # Validate amount
-            if contribution.amount_paid < 500:
-                messages.error(request, "Amount paid cannot be less than 500/=.")
-                return render(request, 'pages/contributions/contribution_list.html', {'form': form})
-            elif contribution.amount_paid > contribution.allocation:
-                messages.error(request, "Amount paid cannot exceed allocation.")
-                return render(request, 'pages/contributions/contribution_list.html', {'form': form})
-            
-            # If valid, set balance and save
-            contribution.balance = contribution.allocation - contribution.amount_paid
-            contribution.save()
-            messages.success(request, 'Contribution added successfully.')
-            return redirect('contribution_list')
+            return handle_excel_upload(request, form)
     else:
-        form = ContributionForm()
+        form = ExcelUploadForm()
 
     contributions = Contribution.objects.select_related('association').all().order_by('year')
+    uploads = ContributionUpload.objects.all().order_by('-uploaded_at')
 
     grouped_contributions = defaultdict(list)
     total_members_by_year = {}
@@ -54,24 +40,83 @@ def contribution_list(request):
         total_allocation_by_year[year] = total_allocation_by_year.get(year, 0) + contribution.allocation
         total_balance_by_year[year] = total_balance_by_year.get(year, 0) + contribution.balance
 
-    form_years = {}
-    for year in grouped_contributions:
-        form_years[year] = ContributionFormYear()
-        
     context = {
         'grouped_contributions': dict(grouped_contributions),
         'total_members_by_year': total_members_by_year,
         'total_requested_by_year': total_requested_by_year,
         'total_allocation_by_year': total_allocation_by_year,
         'total_balance_by_year': total_balance_by_year,
-        'form': form,
-        'form_year': form_years,
+        'upload_form': form,
+        'uploads': uploads,
     }
     return render(request, 'pages/contributions/contribution_list.html', context)
 
 
-from xhtml2pdf import pisa
+def handle_excel_upload(request, form):
+    """Process uploaded Excel file and update contributions"""
+    excel_file = form.cleaned_data['excel_file']
+    year = str(form.cleaned_data['year']).strip()
 
+    try:
+        # Read Excel file
+        df = pd.read_excel(excel_file)
+        df.columns = [str(col).strip() for col in df.columns]
+
+        required_columns = ['Association', 'Members', 'Amount Paid']
+        for col in required_columns:
+            if col not in df.columns:
+                messages.error(request, f"Missing required column: {col}")
+                return redirect('contribution_list')
+
+        updated, created = 0, 0
+
+        for _, row in df.iterrows():
+            assoc_abbr = str(row['Association']).strip()
+            members = int(row['Members'])
+            amount_paid = float(row['Amount Paid'])
+            payment_date = datetime.today().date()
+
+            # Match association abbreviation
+            try:
+                association = Association.objects.get(abbr=assoc_abbr)
+            except Association.DoesNotExist:
+                messages.warning(request, f"Association '{assoc_abbr}' not found, skipping.")
+                continue
+
+            allocation = members * 500 * 12
+            balance = allocation - amount_paid
+
+            # Update or create contribution record
+            obj, created_flag = Contribution.objects.update_or_create(
+                association=association,
+                year=year,
+                defaults={
+                    'allocation': allocation,
+                    'amount_paid': amount_paid,
+                    'balance': balance,
+                    'payment_date': payment_date,
+                }
+            )
+            if created_flag:
+                created += 1
+            else:
+                updated += 1
+
+        # Save upload log
+        upload = form.save(commit=False)
+        upload.uploaded_by = request.user
+        upload.save()
+
+        messages.success(request, f"✅ Uploaded successfully for {year}. "
+                                  f"({updated} updated, {created} new records)")
+
+    except Exception as e:
+        messages.error(request, f"Error processing Excel: {e}")
+
+    return redirect('contribution_list')
+
+
+# Keep your existing PDF and Excel export functions
 @login_required
 def contributions_pdf(request, year):
     contributions = Contribution.objects.filter(year=year).select_related('association')
@@ -102,7 +147,6 @@ def contributions_pdf(request, year):
 
     return response
 
-
 @login_required
 def contributions_excel(request, year):
     contributions = Contribution.objects.filter(year=year).select_related('association')
@@ -111,7 +155,6 @@ def contributions_excel(request, year):
     ws = wb.active
     ws.title = f"Contributions {year}"
 
-    # headers
     headers = ['Association', 'Members', 'Amount Paid', 'Allocation', 'Payment Date', 'Balance']
     ws.append(headers)
 
@@ -125,63 +168,13 @@ def contributions_excel(request, year):
             contribution.balance,
         ])
 
-    # adjust column width
     for col in ws.columns:
         max_length = max(len(str(cell.value)) for cell in col)
         ws.column_dimensions[get_column_letter(col[0].column)].width = max_length + 2
 
-    # export
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename=Contributions_{year}.xlsx'
     wb.save(response)
     return response
 
-@login_required
-def add_contribution_for_year(request, year):
-    if request.method == 'POST':
-        form = ContributionFormYear(request.POST)
-        if form.is_valid():
-            contribution = form.save(commit=False)
-            contribution.year = year
-            member_number = contribution.association.member_number
-            contribution.allocation = member_number * 500 * 12
-
-            if contribution.amount_paid < 500:
-                form.add_error('amount_paid', "Amount paid cannot be less than 500/=")
-            elif contribution.amount_paid > contribution.allocation:
-                form.add_error('amount_paid', "Amount paid cannot exceed allocation.")
-            else:
-                contribution.balance = contribution.allocation - contribution.amount_paid
-                contribution.save()
-                messages.success(request, f"Contribution for {year} added successfully.")
-                return redirect('contribution_list')
-
-        # if form is not valid or has custom errors
-        contributions = Contribution.objects.select_related('association').all().order_by('year')
-        grouped_contributions = defaultdict(list)
-        total_members_by_year = {}
-        total_requested_by_year = {}
-        total_allocation_by_year = {}
-
-        for contribution in contributions:
-            y = contribution.year
-            grouped_contributions[y].append(contribution)
-            total_members_by_year[y] = total_members_by_year.get(y, 0) + contribution.association.member_number
-            total_requested_by_year[y] = total_requested_by_year.get(y, 0) + contribution.amount_paid
-            total_allocation_by_year[y] = total_allocation_by_year.get(y, 0) + contribution.allocation
-
-        form_years = {}
-        for y in grouped_contributions:
-            form_years[y] = ContributionFormYear()
-
-        form_years[year] = form  # replace the form for the current year with the one containing errors
-
-        return render(request, 'pages/contributions/contribution_list.html', {
-            'grouped_contributions': dict(grouped_contributions),
-            'total_members_by_year': total_members_by_year,
-            'total_requested_by_year': total_requested_by_year,
-            'total_allocation_by_year': total_allocation_by_year,
-            'form': ContributionForm(),
-            'form_year': form_years,
-            'show_modal': year,  # Indicate which modal should be shown
-        })
+# Remove the add_contribution_for_year function
