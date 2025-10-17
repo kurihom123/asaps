@@ -28,7 +28,7 @@
     {% if messages %}
         <div id="alert-container">
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm auto-dismiss" role="alert" data-dismiss-time="4000">
                     <i class="fa fa-info-circle"></i> {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -38,121 +38,250 @@
 
     <!-- YEARLY CONTRIBUTION TABLES -->
     {% for year, contributions in grouped_contributions.items %}
-    <div class="card mb-4 shadow-sm border-0">
+    <div class="card mb-4 shadow-sm border-0 contribution-card">
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center toggle-header"
-             style="cursor: pointer;" data-target="#year-{{ forloop.counter }}">
+             style="cursor: pointer;" 
+             data-bs-toggle="collapse" 
+             data-bs-target="#year-{{ forloop.counter }}"
+             aria-expanded="true">
             <h5 class="mb-0">
                 <i class="fa fa-calendar"></i> Bills for {{ year }}
             </h5>
-            <div>
-                <a href="{% url 'contributions_pdf' year %}" target="_blank" class="btn btn-sm btn-outline-light">
+            <div class="d-flex align-items-center">
+                <a href="{% url 'contributions_pdf' year %}" target="_blank" class="btn btn-sm btn-outline-light me-1">
                     <i class="fa fa-file-pdf"></i>
                 </a>
-                <a href="{% url 'contributions_excel' year %}" class="btn btn-sm btn-outline-light">
+                <a href="{% url 'contributions_excel' year %}" class="btn btn-sm btn-outline-light me-1">
                     <i class="fa fa-file-excel"></i>
                 </a>
-                <a href="{% url 'invoice_pdf' year %}" target="_blank" class="btn btn-sm btn-outline-light">
+                <a href="{% url 'invoice_pdf' year %}" target="_blank" class="btn btn-sm btn-outline-light me-2">
                     <i class="fa fa-file-invoice-dollar"></i>
                 </a>
-                <i class="fa fa-chevron-down ms-2"></i>
+                <i class="fa fa-chevron-down toggle-icon"></i>
             </div>
         </div>
 
         <div id="year-{{ forloop.counter }}" class="collapse show">
             <div class="card-body p-0">
-                <table class="table table-bordered table-striped mb-0 align-middle text-center" style="width:100%;">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>#</th>
-                            <th><i class="fa fa-university"></i> Association</th>
-                            <th><i class="fa fa-users"></i> Members</th>
-                            <th><i class="fa fa-money-bill"></i> Amount Paid</th>
-                            <th><i class="fa fa-calculator"></i> Allocation</th>
-                            <th><i class="fa fa-calendar-check"></i> Payment Date</th>
-                            <th><i class="fa fa-balance-scale"></i> Balance</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for contribution in contributions %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ contribution.association.abbr }}</td>
-                            <td>{{ contribution.association.member_number }}</td>
-                            <td>{{ contribution.amount_paid|floatformat:0 }}</td>
-                            <td>{{ contribution.allocation|floatformat:0 }}</td>
-                            <td>{{ contribution.payment_date }}</td>
-                            <td style="color: {% if contribution.balance > 0 %}red{% else %}green{% endif %};">
-                                {{ contribution.balance|floatformat:0 }}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot class="fw-bold table-light">
-                        <tr>
-                            <td></td>
-                            <td>TOTAL</td>
-                            <td>{{ total_members_by_year|dict_get:year }}</td>
-                            <td>{{ total_requested_by_year|dict_get:year }}</td>
-                            <td>{{ total_allocation_by_year|dict_get:year }}</td>
-                            <td></td>
-                            <td style="color:red;">{{ total_balance_by_year|dict_get:year }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped mb-0 align-middle text-center fixed-table">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 5%">#</th>
+                                <th style="width: 15%"><i class="fa fa-university"></i> Association</th>
+                                <th style="width: 10%"><i class="fa fa-users"></i> Members</th>
+                                <th style="width: 15%"><i class="fa fa-money-bill"></i> Amount Paid</th>
+                                <th style="width: 15%"><i class="fa fa-calculator"></i> Allocation</th>
+                                <th style="width: 15%"><i class="fa fa-calendar-check"></i> Payment Date</th>
+                                <th style="width: 15%"><i class="fa fa-balance-scale"></i> Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contribution in contributions %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="text-start">{{ contribution.association.abbr }}</td>
+                                <td>{{ contribution.association.member_number }}</td>
+                                <td>{{ contribution.amount_paid|floatformat:0 }}</td>
+                                <td>{{ contribution.allocation|floatformat:0 }}</td>
+                                <td>{{ contribution.payment_date }}</td>
+                                <td style="color: {% if contribution.balance > 0 %}red{% else %}green{% endif %};">
+                                    {{ contribution.balance|floatformat:0 }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="fw-bold table-light">
+                            <tr>
+                                <td></td>
+                                <td class="text-start">TOTAL</td>
+                                <td>{{ total_members_by_year|dict_get:year }}</td>
+                                <td>{{ total_requested_by_year|dict_get:year }}</td>
+                                <td>{{ total_allocation_by_year|dict_get:year }}</td>
+                                <td></td>
+                                <td style="color:red;">{{ total_balance_by_year|dict_get:year }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
 
             <!-- UPLOAD HISTORY -->
-            {% for upload in uploads %}
-                {% if upload.year == year %}
-                    {% if forloop.first %}
-                    <div class="card-footer bg-light">
-                        <strong><i class="fa fa-history"></i> Upload History:</strong><br>
-                    {% endif %}
+            <div class="card-footer bg-light">
+                <strong><i class="fa fa-history"></i> Upload History:</strong><br>
+                {% for upload in uploads %}
+                    {% if upload.year == year %}
                         <small class="text-muted">
                             {{ upload.uploaded_at|date:"M d, Y H:i" }} by {{ upload.uploaded_by.username }}
-                            <a href="{{ upload.excel_file.url }}" download class="text-primary">
-                                <i class="fa fa-download"></i>
+                            <a href="{{ upload.excel_file.url }}" download class="text-primary ms-2">
+                                <i class="fa fa-download"></i> Download
                             </a>
                         </small><br>
-                    {% if forloop.last %}
-                    </div>
                     {% endif %}
-                {% endif %}
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
     </div>
     {% endfor %}
 </div>
 
 <!-- SCRIPTS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    //Auto-hide alert messages after 4 seconds
-    const alerts = document.querySelectorAll('#alert-container .alert');
-    alerts.forEach(alert => {
-        setTimeout(() => {
-            alert.classList.remove('show');
-            alert.classList.add('fade');
+$(document).ready(function() {
+    // Auto-dismiss alerts
+    $('.auto-dismiss').each(function() {
+        var $alert = $(this);
+        setTimeout(function() {
+            $alert.alert('close');
         }, 4000);
     });
 
-    // 🔽 Toggle table visibility when clicking card header
-    document.querySelectorAll('.toggle-header').forEach(header => {
-        header.addEventListener('click', function() {
-            const target = document.querySelector(this.getAttribute('data-target'));
-            const icon = this.querySelector('.fa-chevron-down');
-
-            if (target.classList.contains('show')) {
-                target.classList.remove('show');
-                icon.style.transform = 'rotate(-90deg)';
+    // Handle collapse events for icon rotation
+    $('.toggle-header').on('click', function() {
+        var target = $(this).data('bs-target');
+        var $icon = $(this).find('.toggle-icon');
+        
+        // Wait for Bootstrap collapse to complete, then update icon
+        setTimeout(function() {
+            if ($(target).hasClass('show')) {
+                $icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
             } else {
-                target.classList.add('show');
-                icon.style.transform = 'rotate(0deg)';
+                $icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
             }
-        });
+        }, 350);
+    });
+
+    // Initialize all icons based on current state
+    $('.toggle-header').each(function() {
+        var target = $(this).data('bs-target');
+        var $icon = $(this).find('.toggle-icon');
+        
+        if ($(target).hasClass('show')) {
+            $icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+        } else {
+            $icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+        }
     });
 });
 </script>
+
+<style>
+/* Fixed table layout with consistent column widths */
+.fixed-table {
+    table-layout: fixed;
+    width: 100%;
+    min-width: 100%;
+}
+
+/* Ensure consistent column behavior */
+.fixed-table th,
+.fixed-table td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0.75rem;
+    vertical-align: middle;
+}
+
+/* Specific column adjustments */
+.fixed-table th:nth-child(1),
+.fixed-table td:nth-child(1) {
+    width: 5%;
+    text-align: center;
+}
+
+.fixed-table th:nth-child(2),
+.fixed-table td:nth-child(2) {
+    width: 15%;
+    text-align: left;
+}
+
+.fixed-table th:nth-child(3),
+.fixed-table td:nth-child(3) {
+    width: 10%;
+    text-align: center;
+}
+
+.fixed-table th:nth-child(4),
+.fixed-table td:nth-child(4) {
+    width: 15%;
+    text-align: center;
+}
+
+.fixed-table th:nth-child(5),
+.fixed-table td:nth-child(5) {
+    width: 15%;
+    text-align: center;
+}
+
+.fixed-table th:nth-child(6),
+.fixed-table td:nth-child(6) {
+    width: 15%;
+    text-align: center;
+}
+
+.fixed-table th:nth-child(7),
+.fixed-table td:nth-child(7) {
+    width: 15%;
+    text-align: center;
+}
+
+/* Table responsive container */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Smooth collapse transitions */
+.collapse {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Card header hover effect */
+.toggle-header:hover {
+    background-color: #2c3034 !important;
+}
+
+/* Icon transition */
+.toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+/* Ensure consistent card behavior */
+.contribution-card {
+    min-height: fit-content;
+}
+
+/* Alert styling */
+.auto-dismiss {
+    transition: opacity 0.5s ease;
+}
+
+/* Text alignment fixes */
+.text-start {
+    text-align: left !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .fixed-table {
+        font-size: 0.875rem;
+    }
+    
+    .fixed-table th,
+    .fixed-table td {
+        padding: 0.5rem;
+    }
+    
+    .table-responsive {
+        border: 1px solid #dee2e6;
+    }
+}
+</style>
 {% endblock %}
