@@ -12,7 +12,7 @@ from .views.universities import university_list, add_university, update_universi
 from .views.association import association_list, add_association, update_association, delete_association
 from .views.contribution import contribution_list, add_contribution_for_year, contributions_pdf, contributions_excel
 from .views.users_list import users_list
-from .views.upload_contribution_excel import upload_contribution_excel
+from .views.upload_contribution_excel import handle_excel_upload
 
 urlpatterns = [
     path('', base, name='base'),
@@ -43,7 +43,7 @@ urlpatterns = [
     path('arrears/download/excel/', download_excel, name='download_excel'),
     path('invoice/<str:year>/', invoice_pdf, name='invoice_pdf'),
     path('users/', users_list, name='users_list'),
-    path('upload_contribution_excel/', upload_contribution_excel, name='upload_contribution_excel'),
+    path('upload_contribution_excel/', handle_excel_upload, name='handle_excel_upload'),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

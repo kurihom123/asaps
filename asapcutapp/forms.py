@@ -1,6 +1,6 @@
 from django import forms
 from .models import Contribution
-
+from .models import ContributionUpload
 
 class ContributionForm(forms.ModelForm):
     class Meta:
@@ -23,3 +23,14 @@ class ContributionFormYear(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+
+
+
+class ExcelUploadForm(forms.ModelForm):
+    class Meta:
+        model = ContributionUpload
+        fields = ['excel_file', 'year']
+        widgets = {
+            'year': forms.TextInput(attrs={'class': 'form-control'}),
+            'excel_file': forms.FileInput(attrs={'class': 'form-control', 'accept': '.xlsx,.xls'})
+        }

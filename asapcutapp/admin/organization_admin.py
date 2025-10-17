@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin.sites import AlreadyRegistered
-from ..models.organization_model import University, Association, Contribution, Position, ContributionFile
+from ..models.organization_model import University, Association, Contribution, Position, ContributionUpload
 
 
 class UniversityAdmin(admin.ModelAdmin):
@@ -20,7 +20,7 @@ admin.site.register(Association, AssociationAdmin)
 
 
 class ContributionAdmin(admin.ModelAdmin):
-    list_display = ('association', 'allocation', 'amount_paid', 'payment_date', 'balance')
+    list_display = ('allocation','payment_date', 'amount_paid', 'balance', 'association', 'year')
     list_filter = ('association',)
 
 
@@ -38,9 +38,9 @@ except AlreadyRegistered:
     pass
 
 
-class ContributionFileAdmin(admin.ModelAdmin):
-    list_display = ('year', 'file', 'uploaded_at')
+class ContributionUploadAdmin(admin.ModelAdmin):
+    list_display = ('excel_file', 'year', 'uploaded_at', 'uploaded_by')
     list_filter = ('year',)
 
 
-admin.site.register(ContributionFile, ContributionFileAdmin)
+admin.site.register(ContributionUpload, ContributionUploadAdmin)
