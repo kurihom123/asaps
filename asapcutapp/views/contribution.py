@@ -22,6 +22,7 @@ def contribution_list(request):
     else:
         form = ExcelUploadForm()
 
+    # Get all contributions ordered by year
     contributions = Contribution.objects.select_related('association').all().order_by('year')
     uploads = ContributionUpload.objects.all().order_by('-uploaded_at')
 
@@ -35,10 +36,18 @@ def contribution_list(request):
         year = contribution.year
         grouped_contributions[year].append(contribution)
 
-        total_members_by_year[year] = total_members_by_year.get(year, 0) + contribution.association.member_number
-        total_requested_by_year[year] = total_requested_by_year.get(year, 0) + contribution.amount_paid
-        total_allocation_by_year[year] = total_allocation_by_year.get(year, 0) + contribution.allocation
-        total_balance_by_year[year] = total_balance_by_year.get(year, 0) + contribution.balance
+        # Initialize if not exists
+        if year not in total_members_by_year:
+            total_members_by_year[year] = 0
+            total_requested_by_year[year] = 0
+            total_allocation_by_year[year] = 0
+            total_balance_by_year[year] = 0
+
+        # Accumulate totals
+        total_members_by_year[year] += contribution.association.member_number
+        total_requested_by_year[year] += contribution.amount_paid
+        total_allocation_by_year[year] += contribution.allocation
+        total_balance_by_year[year] += contribution.balance
 
     context = {
         'grouped_contributions': dict(grouped_contributions),
@@ -51,7 +60,6 @@ def contribution_list(request):
     }
     return render(request, 'pages/contributions/contribution_list.html', context)
 
-
 def handle_excel_upload(request, form):
     """Process uploaded Excel file and update contributions"""
     excel_file = form.cleaned_data['excel_file']
@@ -63,58 +71,79 @@ def handle_excel_upload(request, form):
         df.columns = [str(col).strip() for col in df.columns]
 
         required_columns = ['Association', 'Members', 'Amount Paid']
-        for col in required_columns:
-            if col not in df.columns:
-                messages.error(request, f"Missing required column: {col}")
-                return redirect('contribution_list')
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            messages.error(request, f"Missing required columns: {', '.join(missing_columns)}")
+            return redirect('contribution_list')
 
-        updated, created = 0, 0
+        updated_count = 0
+        created_count = 0
+        errors = []
 
-        for _, row in df.iterrows():
-            assoc_abbr = str(row['Association']).strip()
-            members = int(row['Members'])
-            amount_paid = float(row['Amount Paid'])
-            payment_date = datetime.today().date()
-
-            # Match association abbreviation
+        for index, row in df.iterrows():
             try:
-                association = Association.objects.get(abbr=assoc_abbr)
-            except Association.DoesNotExist:
-                messages.warning(request, f"Association '{assoc_abbr}' not found, skipping.")
+                assoc_abbr = str(row['Association']).strip()
+                members = int(row['Members'])
+                amount_paid = float(row['Amount Paid'])
+                payment_date = datetime.today().date()
+
+                # Match association abbreviation
+                try:
+                    association = Association.objects.get(abbr=assoc_abbr)
+                except Association.DoesNotExist:
+                    errors.append(f"Association '{assoc_abbr}' not found")
+                    continue
+
+                # Update association member number if changed
+                if association.member_number != members:
+                    association.member_number = members
+                    association.save()
+
+                allocation = members * 500 * 12
+                balance = allocation - amount_paid
+
+                # Update or create contribution record
+                obj, created = Contribution.objects.update_or_create(
+                    association=association,
+                    year=year,
+                    defaults={
+                        'allocation': allocation,
+                        'amount_paid': amount_paid,
+                        'balance': balance,
+                        'payment_date': payment_date,
+                    }
+                )
+                if created:
+                    created_count += 1
+                else:
+                    updated_count += 1
+
+            except Exception as e:
+                errors.append(f"Row {index + 2}: {str(e)}")
                 continue
-
-            allocation = members * 500 * 12
-            balance = allocation - amount_paid
-
-            # Update or create contribution record
-            obj, created_flag = Contribution.objects.update_or_create(
-                association=association,
-                year=year,
-                defaults={
-                    'allocation': allocation,
-                    'amount_paid': amount_paid,
-                    'balance': balance,
-                    'payment_date': payment_date,
-                }
-            )
-            if created_flag:
-                created += 1
-            else:
-                updated += 1
 
         # Save upload log
         upload = form.save(commit=False)
         upload.uploaded_by = request.user
         upload.save()
 
-        messages.success(request, f"✅ Uploaded successfully for {year}. "
-                                  f"({updated} updated, {created} new records)")
+        # Show success message
+        if created_count > 0 or updated_count > 0:
+            messages.success(request, f"✅ Uploaded successfully for {year}. ({updated_count} updated, {created_count} new records)")
+        else:
+            messages.warning(request, f"No records were processed for {year}.")
+
+        # Show errors if any
+        if errors:
+            for error in errors[:3]:  # Show only first 3 errors
+                messages.warning(request, error)
+            if len(errors) > 3:
+                messages.warning(request, f"... and {len(errors) - 3} more errors")
 
     except Exception as e:
-        messages.error(request, f"Error processing Excel: {e}")
+        messages.error(request, f"❌ Error processing Excel: {str(e)}")
 
     return redirect('contribution_list')
-
 
 # Keep your existing PDF and Excel export functions
 @login_required
@@ -176,5 +205,3 @@ def contributions_excel(request, year):
     response['Content-Disposition'] = f'attachment; filename=Contributions_{year}.xlsx'
     wb.save(response)
     return response
-
-# Remove the add_contribution_for_year function
