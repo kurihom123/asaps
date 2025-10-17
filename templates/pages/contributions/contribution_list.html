@@ -73,11 +73,12 @@
                         <td>{{ forloop.counter }}</td>
                         <td>{{ contribution.association.abbr }}</td>
                         <td>{{ contribution.association.member_number }}</td>
-                        <td>{{ contribution.amount_paid|floatformat:0 }}</td>
-                      <td>{{ contribution.allocation|floatformat:0 }}</td>
-                      <td style="color: {% if contribution.balance > 0 %}red{% else %}green{% endif %};">
-                          {{ contribution.balance|floatformat:0 }}
-                      </td>
+                        <td>{{ contribution.amount_paid }}</td>
+                        <td>{{ contribution.allocation }}</td>
+                        <td>{{ contribution.payment_date }}</td>
+                        <td style="color: {% if contribution.balance > 0 %}red{% else %}green{% endif %};">
+                            {{ contribution.balance }}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

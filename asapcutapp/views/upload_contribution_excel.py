@@ -53,122 +53,86 @@ def contribution_list(request):
 
 
 def handle_excel_upload(request, form):
-    """Process the uploaded Excel file and create/update contributions"""
+    """Process uploaded Excel file and update or add contributions"""
     excel_file = form.cleaned_data['excel_file']
     year = form.cleaned_data['year']
-    
+
     try:
-        # Read the Excel file
         df = pd.read_excel(excel_file)
-        
-        # Validate required columns
-        required_columns = ['Association', 'Members', 'Amount Paid']
+        required_columns = ['Association', 'Members', 'Amount Paid', 'Payment Date']
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
-            messages.error(request, f"Missing columns in Excel file: {', '.join(missing_columns)}")
+            messages.error(request, f"Missing columns: {', '.join(missing_columns)}")
             return redirect('contribution_list')
-        
+
         success_count = 0
-        update_count = 0
         error_messages = []
-        
+
         for index, row in df.iterrows():
             try:
-                association_abbr = str(row['Association']).strip()
+                assoc_abbr = str(row['Association']).strip()
                 members = int(row['Members'])
-                new_amount_paid = float(row['Amount Paid'])
-                
-                # Handle Payment Date
-                payment_date = row.get('Payment Date')
-                if pd.isna(payment_date) or payment_date == '':
-                    payment_date = datetime.now().date()
-                elif isinstance(payment_date, str):
-                    payment_date = datetime.strptime(payment_date, '%Y-%m-%d').date()
-                
-                # Get association
+                amount_paid = float(row['Amount Paid'])
+                payment_date = row['Payment Date']
+
+                # Convert date string if necessary
+                if isinstance(payment_date, str):
+                    payment_date = datetime.strptime(payment_date, "%Y-%m-%d").date()
+
                 try:
-                    association = Association.objects.get(abbr=association_abbr)
+                    association = Association.objects.get(abbr=assoc_abbr)
                 except Association.DoesNotExist:
-                    error_messages.append(f"Association '{association_abbr}' not found")
+                    error_messages.append(f"Association '{assoc_abbr}' not found.")
                     continue
-                
-                # Calculate allocation (500 * members * 12)
+
+                # Allocation per your formula
                 allocation = members * 500 * 12
-                
-                # Check if contribution already exists
-                existing_contribution = Contribution.objects.filter(
-                    association=association, 
-                    year=year
-                ).first()
-                
-                if existing_contribution:
-                    # OPTION 1: REPLACE the amount (use this if you want to overwrite)
-                    total_amount_paid = new_amount_paid
-                    
-                    # OPTION 2: ADD to existing amount (uncomment if you want cumulative)
-                    # total_amount_paid = existing_contribution.amount_paid + new_amount_paid
-                    
-                    # Update the contribution
-                    existing_contribution.amount_paid = total_amount_paid
-                    existing_contribution.allocation = allocation
-                    existing_contribution.balance = allocation - total_amount_paid
-                    existing_contribution.payment_date = payment_date
-                    
-                    # Update member number if changed
-                    if association.member_number != members:
-                        association.member_number = members
-                        association.save()
-                    
-                    existing_contribution.save()
-                    update_count += 1
-                    messages.info(request, f"Updated {association_abbr}: Amount paid = {total_amount_paid:,}, Balance = {allocation - total_amount_paid:,}")
-                    
-                else:
-                    # Create new contribution
-                    if association.member_number != members:
-                        association.member_number = members
-                        association.save()
-                    
-                    contribution = Contribution.objects.create(
-                        association=association,
-                        year=year,
-                        allocation=allocation,
-                        amount_paid=new_amount_paid,
-                        payment_date=payment_date,
-                        balance=allocation - new_amount_paid
-                    )
-                    success_count += 1
-                    messages.info(request, f"Added {association_abbr}: Amount paid = {new_amount_paid:,}, Balance = {allocation - new_amount_paid:,}")
-                
-            except ValueError as e:
-                error_messages.append(f"Row {index + 2}: Invalid number format - {str(e)}")
-                continue
+
+                # Try to find an existing record for this association & year
+                contribution, created = Contribution.objects.get_or_create(
+                    association=association,
+                    year=year,
+                    defaults={
+                        'allocation': allocation,
+                        'amount_paid': amount_paid,
+                        'payment_date': payment_date,
+                        'balance': allocation - amount_paid,
+                    }
+                )
+
+                if not created:
+                    # Update existing record instead of replacing
+                    new_total_paid = contribution.amount_paid + amount_paid
+                    contribution.amount_paid = new_total_paid
+                    contribution.allocation = allocation
+                    contribution.payment_date = payment_date
+                    contribution.balance = allocation - new_total_paid
+                    contribution.save()
+
+                success_count += 1
+
             except Exception as e:
                 error_messages.append(f"Row {index + 2}: {str(e)}")
-                continue
-        
-        # Save upload record
+
+        # Record upload
         upload = form.save(commit=False)
         upload.uploaded_by = request.user
         upload.save()
-        
-        # Show summary messages
-        if success_count > 0:
-            messages.success(request, f"Added {success_count} new contributions for {year}")
-        if update_count > 0:
-            messages.success(request, f"Updated {update_count} existing contributions for {year}")
-        if not success_count and not update_count and not error_messages:
-            messages.warning(request, "No data was processed from the Excel file")
+
+        # Show messages
+        if success_count:
+            messages.success(request, f" {success_count} records processed for {year}.")
         if error_messages:
-            for error in error_messages[:5]:
-                messages.warning(request, error)
+            for msg in error_messages[:5]:
+                messages.warning(request, msg)
             if len(error_messages) > 5:
-                messages.warning(request, f"... and {len(error_messages) - 5} more errors")
-        
+                messages.warning(request, f"...and {len(error_messages) - 5} more issues found.")
+
     except Exception as e:
-        messages.error(request, f"Error processing Excel file: {str(e)}")
-    
+        messages.error(request, f"Error processing Excel: {str(e)}")
+
     return redirect('contribution_list')
+
 
 # Keep your existing PDF and Excel export functions
 @login_required
