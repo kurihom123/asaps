@@ -39,19 +39,21 @@
             </div>
 
             <!-- Upload History for this year -->
-            {% with uploads|filter_by_year:year as year_uploads %}
-                {% if year_uploads %}
-                <div class="mb-3">
-                    <h6>Upload History:</h6>
-                    {% for upload in year_uploads %}
-                    <small class="text-muted">
-                        {{ upload.uploaded_at|date:"M d, Y H:i" }} by {{ upload.uploaded_by.username }}
-                        <a href="{{ upload.excel_file.url }}" download class="text-primary">📥</a>
-                    </small><br>
-                    {% endfor %}
-                </div>
+              {% for upload in uploads %}
+                  {% if upload.year == year %}
+                      {% if forloop.first %}
+                      <div class="mb-3">
+                          <h6>Upload History:</h6>
+                      {% endif %}
+                          <small class="text-muted">
+                              {{ upload.uploaded_at|date:"M d, Y H:i" }} by {{ upload.uploaded_by.username }}
+                              <a href="{{ upload.excel_file.url }}" download class="text-primary">📥</a>
+                          </small><br>
+                      {% if forloop.last %}
+                      </div>
+                      {% endif %}
                 {% endif %}
-            {% endwith %}
+             {% endfor %}
 
             <table class="table table-bordered table-striped">
                 <thead class="table-dark">
