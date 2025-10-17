@@ -53,83 +53,81 @@ def contribution_list(request):
 
 
 def handle_excel_upload(request, form):
-    """Process uploaded Excel file and update or add contributions"""
+    """Process uploaded Excel file and update contributions"""
     excel_file = form.cleaned_data['excel_file']
-    year = form.cleaned_data['year']
+    year = str(form.cleaned_data['year']).strip()
 
     try:
         df = pd.read_excel(excel_file)
-        required_columns = ['Association', 'Members', 'Amount Paid', 'Payment Date']
-        missing_columns = [col for col in required_columns if col not in df.columns]
-        if missing_columns:
-            messages.error(request, f"Missing columns: {', '.join(missing_columns)}")
+
+        # Normalize column names
+        df.columns = [str(col).strip() for col in df.columns]
+
+        required_columns = ['Association', 'Members', 'Amount Paid']
+        missing = [c for c in required_columns if c not in df.columns]
+        if missing:
+            messages.error(request, f"Missing required columns: {', '.join(missing)}")
             return redirect('contribution_list')
 
         success_count = 0
-        error_messages = []
+        errors = []
 
         for index, row in df.iterrows():
             try:
                 assoc_abbr = str(row['Association']).strip()
                 members = int(row['Members'])
                 amount_paid = float(row['Amount Paid'])
-                payment_date = row['Payment Date']
+                payment_date = datetime.today().date()
 
-                # Convert date string if necessary
-                if isinstance(payment_date, str):
-                    payment_date = datetime.strptime(payment_date, "%Y-%m-%d").date()
-
+                # Validate association
                 try:
                     association = Association.objects.get(abbr=assoc_abbr)
                 except Association.DoesNotExist:
-                    error_messages.append(f"Association '{assoc_abbr}' not found.")
+                    errors.append(f"Row {index+2}: Association '{assoc_abbr}' not found.")
                     continue
 
-                # Allocation per your formula
                 allocation = members * 500 * 12
 
-                # Try to find an existing record for this association & year
+                # Update or create contribution
                 contribution, created = Contribution.objects.get_or_create(
                     association=association,
                     year=year,
                     defaults={
                         'allocation': allocation,
-                        'amount_paid': amount_paid,
                         'payment_date': payment_date,
+                        'amount_paid': amount_paid,
                         'balance': allocation - amount_paid,
                     }
                 )
 
                 if not created:
-                    # Update existing record instead of replacing
-                    new_total_paid = contribution.amount_paid + amount_paid
-                    contribution.amount_paid = new_total_paid
+                    # Update existing record (replace old amount with new one)
                     contribution.allocation = allocation
+                    contribution.amount_paid = amount_paid
                     contribution.payment_date = payment_date
-                    contribution.balance = allocation - new_total_paid
+                    contribution.balance = allocation - amount_paid
                     contribution.save()
 
                 success_count += 1
 
             except Exception as e:
-                error_messages.append(f"Row {index + 2}: {str(e)}")
+                errors.append(f"Row {index + 2}: {str(e)}")
 
-        # Record upload
+        # Save the upload log
         upload = form.save(commit=False)
         upload.uploaded_by = request.user
         upload.save()
 
-        # Show messages
         if success_count:
-            messages.success(request, f" {success_count} records processed for {year}.")
-        if error_messages:
-            for msg in error_messages[:5]:
-                messages.warning(request, msg)
-            if len(error_messages) > 5:
-                messages.warning(request, f"...and {len(error_messages) - 5} more issues found.")
+            messages.success(request, f"✅ {success_count} contributions updated for {year}.")
+        if errors:
+            for e in errors[:5]:
+                messages.warning(request, e)
+            if len(errors) > 5:
+                messages.warning(request, f"... and {len(errors)-5} more issues found.")
 
     except Exception as e:
-        messages.error(request, f"Error processing Excel: {str(e)}")
+        messages.error(request, f"Error reading Excel file: {str(e)}")
 
     return redirect('contribution_list')
 
