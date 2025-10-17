@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin.sites import AlreadyRegistered
-from ..models.organization_model import University, Association, Contribution, Position, ContributionUpload
+from ..models.organization_model import *
 
 
 class UniversityAdmin(admin.ModelAdmin):
