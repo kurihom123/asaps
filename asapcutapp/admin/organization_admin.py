@@ -1,6 +1,6 @@
 from django.contrib import admin
-
-from ..models.organization_model import University, Association, Contribution, Position
+from django.contrib.admin.sites import AlreadyRegistered
+from ..models.organization_model import University, Association, Contribution, Position, ContributionFile
 
 
 class UniversityAdmin(admin.ModelAdmin):
@@ -32,4 +32,15 @@ class PositionAdmin(admin.ModelAdmin):
     list_filter = ('name',)
 
 
-admin.site.register(Position, PositionAdmin)
+try:
+    admin.site.register(Position, PositionAdmin)
+except AlreadyRegistered:
+    pass
+
+
+class ContributionFileAdmin(admin.ModelAdmin):
+    list_display = ('year', 'file', 'uploaded_at')
+    list_filter = ('year',)
+
+
+admin.site.register(ContributionFile, ContributionFileAdmin)

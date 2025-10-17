@@ -58,3 +58,15 @@ class Position(models.Model):
 
     def __str__(self):
         return f'{self.name}'
+
+
+class ContributionFile(models.Model):
+    year = models.CharField(max_length=9)
+    file = models.FileField(upload_to='contribution_excels/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'contribution_file'
+
+    def __str__(self):
+        return f"{self.year} Excel Upload"
