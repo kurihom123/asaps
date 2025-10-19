@@ -30,12 +30,12 @@
                         <tr><th>Amount Paid</th><td>{{ c.amount_paid|floatformat:0 }}</td></tr>
                         <tr><th>Allocation</th><td>{{ c.allocation|floatformat:0 }}</td></tr>
                         <tr>
-                            <th>Balance</th>
+                            <th>Outstanding Balance</th>
                             <td style="color:{% if c.balance > 0 %}red{% else %}green{% endif %}">
                                 {{ c.balance|floatformat:0 }}
                             </td>
                         </tr>
-                        <tr><th>Payment Date</th><td>{{ c.payment_date }}</td></tr>
+                        <!-- <tr><th>Payment Date</th><td>{{ c.payment_date }}</td></tr> -->
                     </table>
                 </div>
             </div>
