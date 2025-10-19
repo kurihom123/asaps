@@ -11,17 +11,18 @@
             <i class="fa fa-hand-holding-dollar"></i> Contribution Records
         </h3>
 
-        {% if request.user.is_staff %}
-        <!-- Excel Upload Form -->
-        <form method="post" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
-            {% csrf_token %}
-            {{ upload_form.year|add_class:"form-select w-auto" }}
-            {{ upload_form.excel_file|add_class:"form-control w-auto" }}
-            <button type="submit" class="btn btn-success">
-                <i class="fa fa-upload"></i> Upload Excel
-            </button>
-        </form>
+        {% if request.user.is_staff and request.user.user_profile.first.position.name|lower == 'treasurer' %}
+            <!-- Excel Upload Form -->
+            <form method="post" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
+                {% csrf_token %}
+                {{ upload_form.year|add_class:"form-select w-auto" }}
+                {{ upload_form.excel_file|add_class:"form-control w-auto" }}
+                <button type="submit" class="btn btn-success">
+                    <i class="fa fa-upload"></i> Upload Excel
+                </button>
+            </form>
         {% endif %}
+
     </div>
 
     <!-- ALERT MESSAGES -->
