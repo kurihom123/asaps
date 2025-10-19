@@ -10,7 +10,7 @@ from .views.authentication import login_view, user_logout
 from .views.dashboard import dashboard
 from .views.universities import university_list, add_university, update_university, delete_university
 from .views.association import association_list, add_association, update_association, delete_association
-from .views.contribution import contribution_list, handle_excel_upload, contributions_pdf, contributions_excel
+from .views.contribution import contribution_list, handle_excel_upload, contributions_pdf, contributions_excel, my_contributions,my_arrears
 from .views.users_list import users_list
 
 urlpatterns = [
@@ -42,7 +42,8 @@ urlpatterns = [
     path('invoice/<str:year>/', invoice_pdf, name='invoice_pdf'),
     path('users/', users_list, name='users_list'),
     path('upload_contribution_excel/', handle_excel_upload, name='handle_excel_upload'),
-
+    path('my-contributions/', my_contributions, name='my_contributions'),
+    path('my-arrears/', my_arrears, name='my_arrears'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -205,3 +205,47 @@ def contributions_excel(request, year):
     response['Content-Disposition'] = f'attachment; filename=Contributions_{year}.xlsx'
     wb.save(response)
     return response
+
+
+
+@login_required
+def my_contributions(request):
+    """View contributions for the logged-in user's association"""
+    user = request.user
+
+    if user.is_staff:
+        return redirect('contribution_list')  # Redirect staff to admin page
+
+    association = getattr(user.user_profile.first(), 'association', None)
+    if not association:
+        return render(request, 'pages/contributions/my_contributions.html', {
+            'error': "No association found for your account."
+        })
+
+    contributions = Contribution.objects.filter(association=association).order_by('-year')
+
+    return render(request, 'pages/contributions/my_contributions.html', {
+        'association': association,
+        'contributions': contributions,
+    })
+
+
+@login_required
+def my_arrears(request):
+    """View arrears (balances) per year for the user's association"""
+    user = request.user
+
+    association = getattr(user.user_profile.first(), 'association', None)
+    if not association:
+        return render(request, 'pages/contributions/my_arrears.html', {
+            'error': "No association found for your account."
+        })
+
+    contributions = Contribution.objects.filter(association=association).order_by('-year')
+    total_arrears = sum(c.balance for c in contributions)
+
+    return render(request, 'pages/contributions/my_arrears.html', {
+        'association': association,
+        'contributions': contributions,
+        'total_arrears': total_arrears,
+    })
