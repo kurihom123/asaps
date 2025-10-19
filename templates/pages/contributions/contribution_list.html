@@ -41,10 +41,12 @@
         {% for year, contributions in grouped_contributions.items %}
         <div class="accordion-item mb-3 border-0 shadow-sm">
             <h2 class="accordion-header" id="heading{{ forloop.counter }}">
-                <button class="accordion-button collapsed bg-light text-dark fw-semibold" type="button"
+                <button class="accordion-button collapsed fw-semibold text-dark"
+                        style="background-color: rgba(245, 245, 245, 0.9); border-bottom: 1px solid #ddd;"
+                        type="button"
                         data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}"
                         aria-expanded="false" aria-controls="collapse{{ forloop.counter }}">
-                    <i class="fa fa-calendar me-2"></i> Bills for {{ year }}
+                        <i class="fa fa-calendar me-2 text-secondary"></i> Bills for {{ year }}
                 </button>
             </h2>
 
@@ -128,3 +130,6 @@
     </div>
 </div>
 {% endblock %}
+
+
+
