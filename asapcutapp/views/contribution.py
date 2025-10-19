@@ -15,14 +15,31 @@ from datetime import datetime
 
 @login_required
 def contribution_list(request):
+    # Handle Excel upload
     if request.method == 'POST' and 'excel_file' in request.FILES:
         form = ExcelUploadForm(request.POST, request.FILES)
         if form.is_valid():
             return handle_excel_upload(request, form)
-    else:
-        form = ExcelUploadForm()
 
-    # Get all contributions ordered by year
+    # Handle manual "Add Year" submission
+    elif request.method == 'POST' and 'new_year' in request.POST:
+        new_year = request.POST.get('new_year').strip()
+        if new_year:
+            # Check if year already exists in contributions or uploaded records
+            existing_years = list(Contribution.objects.values_list('year', flat=True).distinct())
+            if new_year not in existing_years:
+                # Add a dummy year entry using None values
+                messages.success(request, f"Year {new_year} added successfully.")
+                request.session.setdefault('manual_years', []).append(new_year)
+                request.session.modified = True
+            else:
+                messages.info(request, f"ℹYear {new_year} already exists.")
+        else:
+            messages.warning(request, "Please enter a valid year range (e.g. 2025-2026).")
+
+    form = ExcelUploadForm()
+
+    # Fetch contributions and uploads
     contributions = Contribution.objects.select_related('association').all().order_by('year')
     uploads = ContributionUpload.objects.all().order_by('-uploaded_at')
 
@@ -32,25 +49,23 @@ def contribution_list(request):
     total_allocation_by_year = {}
     total_balance_by_year = {}
 
-    for contribution in contributions:
-        year = contribution.year
-        grouped_contributions[year].append(contribution)
+    # Group contributions by year
+    for c in contributions:
+        year = c.year
+        grouped_contributions[year].append(c)
+        total_members_by_year[year] = total_members_by_year.get(year, 0) + c.association.member_number
+        total_requested_by_year[year] = total_requested_by_year.get(year, 0) + c.amount_paid
+        total_allocation_by_year[year] = total_allocation_by_year.get(year, 0) + c.allocation
+        total_balance_by_year[year] = total_balance_by_year.get(year, 0) + c.balance
 
-        # Initialize if not exists
-        if year not in total_members_by_year:
-            total_members_by_year[year] = 0
-            total_requested_by_year[year] = 0
-            total_allocation_by_year[year] = 0
-            total_balance_by_year[year] = 0
-
-        # Accumulate totals
-        total_members_by_year[year] += contribution.association.member_number
-        total_requested_by_year[year] += contribution.amount_paid
-        total_allocation_by_year[year] += contribution.allocation
-        total_balance_by_year[year] += contribution.balance
+    # Merge manually added years (from session)
+    manual_years = request.session.get('manual_years', [])
+    for y in manual_years:
+        if y not in grouped_contributions:
+            grouped_contributions[y] = []  # empty placeholder
 
     context = {
-        'grouped_contributions': dict(grouped_contributions),
+        'grouped_contributions': dict(sorted(grouped_contributions.items())),
         'total_members_by_year': total_members_by_year,
         'total_requested_by_year': total_requested_by_year,
         'total_allocation_by_year': total_allocation_by_year,
@@ -58,6 +73,7 @@ def contribution_list(request):
         'upload_form': form,
         'uploads': uploads,
     }
+
     return render(request, 'pages/contributions/contribution_list.html', context)
 
 def handle_excel_upload(request, form):

@@ -10,8 +10,8 @@
         <h3 class="fw-bold text-secondary">
             <i class="fa fa-hand-holding-dollar"></i> Contribution Records
         </h3>
-
         {% if request.user.is_staff and request.user.user_profile.first.position.name|lower == 'treasurer' %}
+        <div class="d-flex align-items-center gap-2">
             <!-- Excel Upload Form -->
             <form method="post" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
                 {% csrf_token %}
@@ -21,7 +21,38 @@
                     <i class="fa fa-upload"></i> Upload Excel
                 </button>
             </form>
+
+            <!-- Add Year Button -->
+            <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#addYearModal">
+                <i class="fa fa-plus"></i> Add Year
+            </button>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="addYearModal" tabindex="-1" aria-labelledby="addYearModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="addYearModalLabel">
+                <i class="fa fa-calendar-plus text-secondary"></i> Add New Contribution Year
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                <label class="form-label">Enter Year (e.g. 2025-2026)</label>
+                <input type="text" name="new_year" class="form-control" placeholder="2025-2026" required>
+                </div>
+                <div class="modal-footer">
+                <button type="submit" class="btn btn-dark">Save Year</button>
+                </div>
+            </form>
+            </div>
+        </div>
+        </div>
         {% endif %}
+
     </div>
 
     <!-- ALERT MESSAGES -->
