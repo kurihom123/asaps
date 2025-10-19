@@ -19,14 +19,11 @@
     </button>
     <ul class="navbar-nav ms-auto me-3 me-lg-4">
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button"
-               data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="fas fa-user fa-fw"></i>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                <li>
-                    <a class="dropdown-item" href="#">Profile</a>
-                </li>
+                <li><a class="dropdown-item" href="#">Profile</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
                     <form method="post" action="{% url 'user_logout' %}">
@@ -45,20 +42,21 @@
             <div class="d-flex flex-column h-100">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
-                        <div class="sb-sidenav-menu-heading">Core</div>
-                        <a class="nav-link" href="{% url 'dashboard' %}">
-                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                            Dashboard
-                        </a>
 
                         {% if request.user.is_authenticated %}
                             {% if request.user.is_staff %}
-                                <!-- ================= STAFF MENU ================= -->
-                                <div class="sb-sidenav-menu-heading">Management</div>
+                                <!-- ===== STAFF MENU ===== -->
+                                <div class="sb-sidenav-menu-heading">Core</div>
+                                <a class="nav-link" href="{% url 'dashboard' %}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                                    Dashboard
+                                </a>
+
+                                <div class="sb-sidenav-menu-heading">Pages</div>
 
                                 <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                                   data-bs-target="#collapseLayoutsUniversities"
-                                   aria-expanded="false" aria-controls="collapseLayoutsUniversities">
+                                   data-bs-target="#collapseLayoutsUniversities" aria-expanded="false"
+                                   aria-controls="collapseLayoutsUniversities">
                                     <div class="sb-nav-link-icon text-white"><i class="fas fa-university"></i></div>
                                     Universities
                                     <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
@@ -71,8 +69,8 @@
                                 </div>
 
                                 <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                                   data-bs-target="#collapseLayoutsAssociations"
-                                   aria-expanded="false" aria-controls="collapseLayoutsAssociations">
+                                   data-bs-target="#collapseLayoutsAssociations" aria-expanded="false"
+                                   aria-controls="collapseLayoutsAssociations">
                                     <div class="sb-nav-link-icon text-white"><i class="fas fa-users"></i></div>
                                     Associations
                                     <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
@@ -85,9 +83,9 @@
                                 </div>
 
                                 <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                                   data-bs-target="#collapseLayoutsContributions"
-                                   aria-expanded="false" aria-controls="collapseLayoutsContributions">
-                                    <div class="sb-nav-link-icon text-white"><i class="fas fa-hand-holding-dollar"></i></div>
+                                   data-bs-target="#collapseLayoutsContributions" aria-expanded="false"
+                                   aria-controls="collapseLayoutsContributions">
+                                    <div class="sb-nav-link-icon text-white"><i class="fas fa-dollar-sign"></i></div>
                                     Contributions
                                     <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                                 </a>
@@ -101,7 +99,7 @@
                                 <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
                                    data-bs-target="#collapseLayoutsArrears" aria-expanded="false"
                                    aria-controls="collapseLayoutsArrears">
-                                    <div class="sb-nav-link-icon text-white"><i class="fas fa-scale-balanced"></i></div>
+                                    <div class="sb-nav-link-icon text-white"><i class="fas fa-wallet"></i></div>
                                     Arrears
                                     <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                                 </a>
@@ -117,7 +115,7 @@
                                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
                                            data-bs-target="#collapseLayoutsUsers" aria-expanded="false"
                                            aria-controls="collapseLayoutsUsers">
-                                            <div class="sb-nav-link-icon text-white"><i class="fas fa-user-shield"></i></div>
+                                            <div class="sb-nav-link-icon text-white"><i class="fas fa-users-cog"></i></div>
                                             Users
                                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                                         </a>
@@ -125,7 +123,7 @@
                                              data-bs-parent="#sidenavAccordion">
                                             <nav class="sb-sidenav-menu-nested nav">
                                                 <a class="nav-link" href="{% url 'users_list' %}">
-                                                    <i class="fas fa-users-cog me-2"></i> Manage Users
+                                                    Manage Users
                                                 </a>
                                             </nav>
                                         </div>
@@ -133,16 +131,14 @@
                                 {% endwith %}
 
                             {% else %}
-                                <!-- ================= NON-STAFF MENU ================= -->
-                                <div class="sb-sidenav-menu-heading">My Association</div>
-
+                                <!-- ===== NON-STAFF MENU ===== -->
+                                <div class="sb-sidenav-menu-heading">Association Access</div>
                                 <a class="nav-link" href="{% url 'my_contributions' %}">
-                                    <div class="sb-nav-link-icon text-white"><i class="fas fa-hand-holding-dollar"></i></div>
+                                    <div class="sb-nav-link-icon"><i class="fas fa-hand-holding-usd"></i></div>
                                     My Contributions
                                 </a>
-
                                 <a class="nav-link" href="{% url 'my_arrears' %}">
-                                    <div class="sb-nav-link-icon text-white"><i class="fas fa-balance-scale"></i></div>
+                                    <div class="sb-nav-link-icon"><i class="fas fa-balance-scale"></i></div>
                                     My Arrears
                                 </a>
                             {% endif %}
@@ -158,9 +154,54 @@
         </nav>
     </div>
 
+    <!-- ===== CONTENT SECTION ===== -->
     <div id="layoutSidenav_content">
         <main>
             {% block content %}
+                {% if request.user.is_staff %}
+                <main>
+                    <div class="container-fluid px-4">
+                        <h2 class="mt-4">Dashboard</h2>
+                        <ol class="breadcrumb mb-4">
+                            <li class="breadcrumb-item active">Dashboard</li>
+                        </ol>
+                        <div class="row">
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card bg-primary text-white mb-4">
+                                    <div class="card-body">MEMBERS</div>
+                                    <div class="card-footer d-flex align-items-center justify-content-between">
+                                        <h4>{{ total_members }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card bg-warning text-white mb-4">
+                                    <div class="card-body">UNIVERSITIES</div>
+                                    <div class="card-footer d-flex align-items-center justify-content-between">
+                                        <h4>{{ total_universities }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card bg-success text-white mb-4">
+                                    <div class="card-body">ASSOCIATIONS</div>
+                                    <div class="card-footer d-flex align-items-center justify-content-between">
+                                        <h4>{{ total_associations }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card bg-secondary text-white mb-4">
+                                    <div class="card-body">CONTRIBUTIONS</div>
+                                    <div class="card-footer d-flex align-items-center justify-content-between">
+                                        <h4>{{ total_contributions }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                {% endif %}
             {% endblock %}
         </main>
     </div>
