@@ -26,7 +26,7 @@ class Association(models.Model):
 
 class Contribution(models.Model):
     allocation = models.BigIntegerField()
-    payment_date = models.DateField(max_length=20, default='-')
+    payment_date = models.CharField(max_length=20, default='-')
     amount_paid = models.BigIntegerField()
     balance = models.BigIntegerField()
     association = models.ForeignKey(Association, on_delete=models.CASCADE, related_name='contribution_association')

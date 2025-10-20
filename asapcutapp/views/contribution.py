@@ -76,6 +76,7 @@ def contribution_list(request):
 
     return render(request, 'pages/contributions/contribution_list.html', context)
 
+
 def handle_excel_upload(request, form):
     """Process uploaded Excel file with arrears and date logic"""
     excel_file = form.cleaned_data['excel_file']
@@ -94,40 +95,62 @@ def handle_excel_upload(request, form):
         updated_count, created_count = 0, 0
         errors = []
 
+        # Compute previous academic year (e.g., 2024-2025 → 2023-2024)
+        try:
+            start, end = year.split('-')
+            prev_year = f"{int(start)-1}-{int(start)}"
+        except Exception:
+            prev_year = None
+
         for index, row in df.iterrows():
             try:
                 assoc_abbr = str(row['Association']).strip()
                 members = int(row['Members'])
                 amount_paid = float(row['Amount Paid'])
 
-                # Handle Date Paid blank as '-'
-                date_paid = str(row['Date Paid']).strip()
-                payment_date = '-' if pd.isna(date_paid) or date_paid == '' else date_paid
+                # Handle Date Paid (support datetime or string)
+                date_paid_raw = row['Date Paid']
+                if pd.isna(date_paid_raw) or str(date_paid_raw).strip() == '':
+                    payment_date = '-'
+                else:
+                    if isinstance(date_paid_raw, pd.Timestamp):  # Excel true date
+                        payment_date = date_paid_raw.strftime('%d/%m/%Y')
+                    else:
+                        # Convert “2024/06/30” or “30/06/2024” safely
+                        date_str = str(date_paid_raw).replace('-', '/')
+                        try:
+                            payment_date = pd.to_datetime(date_str, dayfirst=True).strftime('%d/%m/%Y')
+                        except Exception:
+                            payment_date = '-'
 
-                # Find association
+                # 🔎 Find association
                 try:
                     association = Association.objects.get(abbr=assoc_abbr)
                 except Association.DoesNotExist:
                     errors.append(f"Association '{assoc_abbr}' not found.")
                     continue
 
-                # Update member count if needed
+                # Update member number if changed
                 if association.member_number != members:
                     association.member_number = members
                     association.save()
 
                 allocation = members * 500 * 12
 
-                # Check for previous year arrears
-                prev_contrib = Contribution.objects.filter(
-                    association=association
-                ).exclude(year=year).order_by('-year').first()
+                # Determine previous year arrears
+                prev_arrear = 0
+                if prev_year:
+                    prev_contrib = Contribution.objects.filter(
+                        association=association,
+                        year=prev_year
+                    ).first()
+                    if prev_contrib:
+                        prev_arrear = prev_contrib.balance
 
-                prev_arrear = prev_contrib.balance if prev_contrib else 0
                 total_bills = allocation + prev_arrear
                 balance = total_bills - amount_paid
 
-                # Create or update
+                # Create or update record
                 obj, created = Contribution.objects.update_or_create(
                     association=association,
                     year=year,
@@ -168,6 +191,7 @@ def handle_excel_upload(request, form):
         messages.error(request, f"Upload failed: {str(e)}")
 
     return redirect('contribution_list')
+
 
 
 # Keep your existing PDF and Excel export functions
