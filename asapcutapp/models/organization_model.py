@@ -45,18 +45,6 @@ class Contribution(models.Model):
                 raise ValidationError("Amount paid cannot exceed allocation.")
             self.balance = self.allocation - self.amount_paid
 
-    def get_total_bills(self):
-        """Return correct total bill depending on year and arrears logic"""
-        prev_contrib = (
-            Contribution.objects
-            .filter(association=self.association)
-            .exclude(year=self.year)
-            .order_by('-year')
-            .first()
-        )
-        if prev_contrib:
-            return self.allocation + prev_contrib.balance
-        return self.allocation - self.amount_paid
 
     def __str__(self):
         return f"{self.association.abbr} - {self.year}"

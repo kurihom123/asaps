@@ -78,7 +78,7 @@ def contribution_list(request):
 
 
 def handle_excel_upload(request, form):
-    """Process uploaded Excel file with arrears and date logic"""
+    """Process uploaded Excel file with flexible date handling (no total bills)"""
     excel_file = form.cleaned_data['excel_file']
     year = str(form.cleaned_data['year']).strip()
 
@@ -101,14 +101,17 @@ def handle_excel_upload(request, form):
                 members = int(row['Members'])
                 amount_paid = float(row['Amount Paid'])
 
-                # --- Handle payment date ---
+                # --- Handle flexible date format ---
                 date_paid = str(row['Date Paid']).strip()
                 if pd.isna(date_paid) or date_paid == '':
-                    payment_date = '-'
+                    payment_date = '-'  # Blank date
                 else:
                     try:
-                        # Safely handle 2024/06/30 or 30/06/2024
-                        payment_date = pd.to_datetime(date_paid, dayfirst=True).date()
+                        payment_date = pd.to_datetime(date_paid, dayfirst=True, errors='coerce')
+                        if pd.isna(payment_date):
+                            payment_date = '-'
+                        else:
+                            payment_date = payment_date.date()
                     except Exception:
                         payment_date = '-'
 
@@ -124,28 +127,11 @@ def handle_excel_upload(request, form):
                     association.member_number = members
                     association.save()
 
-                # --- Current allocation ---
+                # --- Calculate allocation ---
                 allocation = members * 500 * 12
 
-                # --- Find previous year's contribution for arrears ---
-                prev_contrib = (
-                    Contribution.objects
-                    .filter(association=association)
-                    .exclude(year=year)
-                    .order_by('-year')
-                    .first()
-                )
-
-                # --- Total bill logic ---
-                if prev_contrib:
-                    # For 2024–2025 onwards → total bill = allocation + previous year's balance
-                    total_bills = allocation + prev_contrib.balance
-                else:
-                    # For first year (2023–2024) → total bill = allocation - amount_paid
-                    total_bills = allocation - amount_paid
-
-                # --- Compute balance ---
-                balance = total_bills - amount_paid
+                # --- Compute balance directly (no total bills) ---
+                balance = allocation - amount_paid
 
                 # --- Save or update contribution ---
                 obj, created = Contribution.objects.update_or_create(
@@ -189,7 +175,6 @@ def handle_excel_upload(request, form):
         messages.error(request, f"Upload failed: {str(e)}")
 
     return redirect('contribution_list')
-
 
 
 # Keep your existing PDF and Excel export functions
