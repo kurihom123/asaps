@@ -26,7 +26,7 @@ class Association(models.Model):
 
 class Contribution(models.Model):
     allocation = models.BigIntegerField()
-    payment_date = models.DateField(default='-')
+    payment_date = models.DateField(max_length=20, default='-')
     amount_paid = models.BigIntegerField()
     balance = models.BigIntegerField()
     association = models.ForeignKey(Association, on_delete=models.CASCADE, related_name='contribution_association')
@@ -47,6 +47,19 @@ class Contribution(models.Model):
             if self.amount_paid > self.allocation:
                 raise ValidationError("Amount paid cannot exceed allocation.")
             self.balance = self.allocation - self.amount_paid
+
+    def get_total_bills(self):
+        """Total = this year's allocation + arrears (previous year's balance)"""
+        prev_years = Contribution.objects.filter(
+            association=self.association
+        ).exclude(year=self.year).order_by('-year')
+        if prev_years.exists():
+            last_arrear = prev_years.first().balance
+            return self.allocation + last_arrear
+        return self.allocation
+
+    def __str__(self):
+        return f"{self.association.abbr} - {self.year}"
 
 class ContributionUpload(models.Model):
     excel_file = models.FileField(upload_to='contribution_uploads/')

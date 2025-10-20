@@ -106,7 +106,8 @@
                                     <th style="width: 10%"><i class="fa fa-users"></i> Members</th>
                                     <th style="width: 15%"><i class="fa fa-money-bill"></i> Amount Paid</th>
                                     <th style="width: 15%"><i class="fa fa-calculator"></i> Allocation</th>
-                                    <th style="width: 15%"><i class="fa fa-calendar-check"></i>Date Records</th>
+                                    <th style="width: 15%"><i class="fa fa-calculator"></i> Total Bills</th>
+                                    <th style="width: 15%"><i class="fa fa-calendar-check"></i>Date Paid</th>
                                     <th style="width: 15%"><i class="fa fa-balance-scale"></i> Balance</th>
                                 </tr>
                             </thead>
@@ -118,6 +119,7 @@
                                     <td>{{ contribution.association.member_number }}</td>
                                     <td>{{ contribution.amount_paid|floatformat:0 }}</td>
                                     <td>{{ contribution.allocation|floatformat:0 }}</td>
+                                    <td>{{ contribution.get_total_bills|floatformat:0 }}</td>
                                     <td>{{ contribution.payment_date }}</td>
                                     <td style="color: {% if contribution.balance > 0 %}red{% else %}green{% endif %};">
                                         {{ contribution.balance|floatformat:0 }}
