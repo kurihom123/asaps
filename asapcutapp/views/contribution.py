@@ -77,23 +77,22 @@ def contribution_list(request):
     return render(request, 'pages/contributions/contribution_list.html', context)
 
 def handle_excel_upload(request, form):
-    """Process uploaded Excel file and update contributions"""
+    """Process uploaded Excel file and update contributions (with Date Paid support)"""
     excel_file = form.cleaned_data['excel_file']
     year = str(form.cleaned_data['year']).strip()
 
     try:
-        # Read Excel file
         df = pd.read_excel(excel_file)
         df.columns = [str(col).strip() for col in df.columns]
 
-        required_columns = ['Association', 'Members', 'Amount Paid']
+        # Require Date Paid now
+        required_columns = ['Association', 'Members', 'Amount Paid', 'Date Paid']
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
             messages.error(request, f"Missing required columns: {', '.join(missing_columns)}")
             return redirect('contribution_list')
 
-        updated_count = 0
-        created_count = 0
+        updated_count, created_count = 0, 0
         errors = []
 
         for index, row in df.iterrows():
@@ -101,16 +100,25 @@ def handle_excel_upload(request, form):
                 assoc_abbr = str(row['Association']).strip()
                 members = int(row['Members'])
                 amount_paid = float(row['Amount Paid'])
-                payment_date = datetime.today().date()
 
-                # Match association abbreviation
+                # Parse payment date safely
+                date_str = str(row['Date Paid']).strip()
+                if pd.isna(date_str) or not date_str:
+                    payment_date = datetime.today().date()
+                else:
+                    try:
+                        payment_date = pd.to_datetime(date_str).date()
+                    except Exception:
+                        payment_date = datetime.today().date()
+
+                # Find association
                 try:
                     association = Association.objects.get(abbr=assoc_abbr)
                 except Association.DoesNotExist:
-                    errors.append(f"Association '{assoc_abbr}' not found")
+                    errors.append(f"Association '{assoc_abbr}' not found.")
                     continue
 
-                # Update association member number if changed
+                # Update member count if different
                 if association.member_number != members:
                     association.member_number = members
                     association.save()
@@ -118,7 +126,7 @@ def handle_excel_upload(request, form):
                 allocation = members * 500 * 12
                 balance = allocation - amount_paid
 
-                # Update or create contribution record
+                # Create or update record
                 obj, created = Contribution.objects.update_or_create(
                     association=association,
                     year=year,
@@ -143,21 +151,23 @@ def handle_excel_upload(request, form):
         upload.uploaded_by = request.user
         upload.save()
 
-        # Show success message
-        if created_count > 0 or updated_count > 0:
-            messages.success(request, f"✅ Uploaded successfully for {year}. ({updated_count} updated, {created_count} new records)")
+        # Feedback messages
+        if created_count or updated_count:
+            messages.success(
+                request,
+                f"Upload successful for {year} ({updated_count} updated, {created_count} new)."
+            )
         else:
-            messages.warning(request, f"No records were processed for {year}.")
+            messages.warning(request, f"No valid records processed for {year}.")
 
-        # Show errors if any
         if errors:
-            for error in errors[:3]:  # Show only first 3 errors
+            for error in errors[:3]:
                 messages.warning(request, error)
             if len(errors) > 3:
-                messages.warning(request, f"... and {len(errors) - 3} more errors")
+                messages.warning(request, f"... and {len(errors) - 3} more errors.")
 
     except Exception as e:
-        messages.error(request, f"❌ Error processing Excel: {str(e)}")
+        messages.error(request, f"Excel processing failed: {str(e)}")
 
     return redirect('contribution_list')
 
