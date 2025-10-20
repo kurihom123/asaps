@@ -36,9 +36,6 @@ class Contribution(models.Model):
         db_table = 'contribution'
         unique_together = ['association', 'year']  # Prevent duplicates
 
-    def __str__(self):
-        return f'{self.association} - {self.year}'
-
     def clean(self):
         if self.amount_paid is not None and self.amount_paid < 0:
             raise ValidationError("Amount paid cannot be negative.")
@@ -49,14 +46,17 @@ class Contribution(models.Model):
             self.balance = self.allocation - self.amount_paid
 
     def get_total_bills(self):
-        """Total = this year's allocation + arrears (previous year's balance)"""
-        prev_years = Contribution.objects.filter(
-            association=self.association
-        ).exclude(year=self.year).order_by('-year')
-        if prev_years.exists():
-            last_arrear = prev_years.first().balance
-            return self.allocation + last_arrear
-        return self.allocation
+        """Return correct total bill depending on year and arrears logic"""
+        prev_contrib = (
+            Contribution.objects
+            .filter(association=self.association)
+            .exclude(year=self.year)
+            .order_by('-year')
+            .first()
+        )
+        if prev_contrib:
+            return self.allocation + prev_contrib.balance
+        return self.allocation - self.amount_paid
 
     def __str__(self):
         return f"{self.association.abbr} - {self.year}"

@@ -95,62 +95,59 @@ def handle_excel_upload(request, form):
         updated_count, created_count = 0, 0
         errors = []
 
-        # Compute previous academic year (e.g., 2024-2025 → 2023-2024)
-        try:
-            start, end = year.split('-')
-            prev_year = f"{int(start)-1}-{int(start)}"
-        except Exception:
-            prev_year = None
-
         for index, row in df.iterrows():
             try:
                 assoc_abbr = str(row['Association']).strip()
                 members = int(row['Members'])
                 amount_paid = float(row['Amount Paid'])
 
-                # Handle Date Paid (support datetime or string)
-                date_paid_raw = row['Date Paid']
-                if pd.isna(date_paid_raw) or str(date_paid_raw).strip() == '':
+                # --- Handle payment date ---
+                date_paid = str(row['Date Paid']).strip()
+                if pd.isna(date_paid) or date_paid == '':
                     payment_date = '-'
                 else:
-                    if isinstance(date_paid_raw, pd.Timestamp):  # Excel true date
-                        payment_date = date_paid_raw.strftime('%d/%m/%Y')
-                    else:
-                        # Convert “2024/06/30” or “30/06/2024” safely
-                        date_str = str(date_paid_raw).replace('-', '/')
-                        try:
-                            payment_date = pd.to_datetime(date_str, dayfirst=True).strftime('%d/%m/%Y')
-                        except Exception:
-                            payment_date = '-'
+                    try:
+                        # Safely handle 2024/06/30 or 30/06/2024
+                        payment_date = pd.to_datetime(date_paid, dayfirst=True).date()
+                    except Exception:
+                        payment_date = '-'
 
-                # 🔎 Find association
+                # --- Find association ---
                 try:
                     association = Association.objects.get(abbr=assoc_abbr)
                 except Association.DoesNotExist:
                     errors.append(f"Association '{assoc_abbr}' not found.")
                     continue
 
-                # Update member number if changed
+                # --- Update member count if changed ---
                 if association.member_number != members:
                     association.member_number = members
                     association.save()
 
+                # --- Current allocation ---
                 allocation = members * 500 * 12
 
-                # Determine previous year arrears
-                prev_arrear = 0
-                if prev_year:
-                    prev_contrib = Contribution.objects.filter(
-                        association=association,
-                        year=prev_year
-                    ).first()
-                    if prev_contrib:
-                        prev_arrear = prev_contrib.balance
+                # --- Find previous year's contribution for arrears ---
+                prev_contrib = (
+                    Contribution.objects
+                    .filter(association=association)
+                    .exclude(year=year)
+                    .order_by('-year')
+                    .first()
+                )
 
-                total_bills = allocation + prev_arrear
+                # --- Total bill logic ---
+                if prev_contrib:
+                    # For 2024–2025 onwards → total bill = allocation + previous year's balance
+                    total_bills = allocation + prev_contrib.balance
+                else:
+                    # For first year (2023–2024) → total bill = allocation - amount_paid
+                    total_bills = allocation - amount_paid
+
+                # --- Compute balance ---
                 balance = total_bills - amount_paid
 
-                # Create or update record
+                # --- Save or update contribution ---
                 obj, created = Contribution.objects.update_or_create(
                     association=association,
                     year=year,
@@ -171,14 +168,15 @@ def handle_excel_upload(request, form):
                 errors.append(f"Row {index + 2}: {str(e)}")
                 continue
 
-        # Save upload record
+        # --- Save upload record ---
         upload = form.save(commit=False)
         upload.uploaded_by = request.user
         upload.save()
 
+        # --- Success messages ---
         messages.success(
             request,
-            f"Upload successful ({updated_count} updated, {created_count} new)"
+            f"Upload successful ({updated_count} updated, {created_count} new records)."
         )
 
         if errors:
