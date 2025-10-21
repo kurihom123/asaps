@@ -62,8 +62,11 @@
             {% endif %}
 
             <td>
-              <a href="?view_id={{ info.report.id }}" class="btn btn-outline-info btn-sm">View</a>
-              <a href="{% url 'download_report' info.report.id %}" class="btn btn-outline-success btn-sm">⬇️ Download</a>
+              <a href="{{ info.report.report_file.url }}" target="_blank" class="btn btn-outline-info btn-sm" 
+                onclick="fetchView({{ info.report.id }})">
+                View
+                </a>
+              <a href="{% url 'download_report' info.report.id %}" class="btn btn-outline-success btn-sm">Download</a>
             </td>
           </tr>
           {% empty %}
@@ -152,11 +155,13 @@
 {% endfor %}
 
 <script>
-function markViewed(reportId) {
-  fetch(`/reports/${reportId}/mark-viewed/`, {
-    method: 'POST',
-    headers: {'X-CSRFToken': '{{ csrf_token }}'}
-  }).then(() => location.reload());
+function fetchView(reportId) {
+    fetch(`/reports/${reportId}/mark-viewed/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    });
 }
 </script>
 

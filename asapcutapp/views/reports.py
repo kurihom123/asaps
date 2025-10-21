@@ -30,15 +30,6 @@ def report_list(request):
         else:
             messages.error(request, "Please check your form and try again.")
 
-    # Handle viewing
-    view_id = request.GET.get("view_id")
-    if view_id:
-        report = Report.objects.filter(id=view_id).first()
-        if report:
-            ReportView.objects.get_or_create(user=user, report=report)
-            messages.success(request, "You have viewed this document.")
-            return redirect('report_list')
-
     # Reports
     reports = Report.objects.all().order_by('-created_at')
 
@@ -47,9 +38,9 @@ def report_list(request):
     for report in reports:
         viewed_by = ReportView.objects.filter(report=report).order_by('-viewed_at')
         user_viewed = viewed_by.filter(user=user).exists()
-        # Users who have not viewed
-        all_users = User.objects.all()
-        not_viewed_users = all_users.exclude(id__in=viewed_by.values_list('user_id', flat=True))
+        # Users who have not viewed (exclude superusers)
+        all_regular_users = User.objects.filter(is_superuser=False)
+        not_viewed_users = all_regular_users.exclude(id__in=viewed_by.values_list('user_id', flat=True))
         reports_info.append({
             'report': report,
             'viewed_by_users': viewed_by,
