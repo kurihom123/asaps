@@ -10,9 +10,9 @@
         <span class="badge bg-danger ms-2">{{ unread_reports.count }} Unread</span>
       {% endif %}
     </h4>
-
-    {% if request.user.user_profile.position.position_name|lower == 'treasurer' %}
-      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReportModal">
+    
+    {% if request.user.is_staff and request.user.user_profile.first.position.name|lower == 'treasurer' %}
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReportModal">
         Add Report
       </button>
     {% endif %}
