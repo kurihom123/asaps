@@ -12,11 +12,11 @@ def report_list(request):
     user = request.user
     upload_form = ReportUploadForm()
 
-    # Detect role for special viewing
+    # Detect role
     role_name = getattr(getattr(getattr(user, 'user_profile', None), 'first', None), 'position', None)
     role_name = getattr(role_name, 'name', '').lower() if role_name else ''
 
-    # Handle POST upload (for treasurer)
+    # Handle POST upload
     if request.method == "POST":
         upload_form = ReportUploadForm(request.POST, request.FILES)
         if upload_form.is_valid():
@@ -28,7 +28,7 @@ def report_list(request):
         else:
             messages.error(request, "Please check your form and try again.")
 
-    # Handle Viewing (mark as viewed)
+    # Handle Viewing
     view_id = request.GET.get("view_id")
     if view_id:
         report = Report.objects.filter(id=view_id).first()
@@ -44,21 +44,21 @@ def report_list(request):
         if report:
             return FileResponse(open(report.report_file.path, 'rb'), as_attachment=True)
 
-    # Get reports
+    # Get reports and precompute viewed info
     reports = Report.objects.all().order_by('-created_at')
-
-    # Build a view info dictionary for admins
     reports_info = []
     for report in reports:
         viewed_by_ids = ReportView.objects.filter(report=report).values_list('user_id', flat=True)
-        viewed_users = {rv.user.username: rv.user_id in viewed_by_ids for rv in ReportView.objects.filter(report=report)}
+        viewed_by_users = ReportView.objects.filter(report=report)
+        # For regular user check if they viewed this report
+        user_viewed = ReportView.objects.filter(report=report, user=user).exists()
         reports_info.append({
             'report': report,
-            'viewed_by_ids': list(viewed_by_ids),
+            'viewed_by_users': viewed_by_users,
+            'user_viewed': user_viewed,
         })
 
     context = {
-        'reports': reports,
         'reports_info': reports_info,
         'role_name': role_name,
         'upload_form': upload_form

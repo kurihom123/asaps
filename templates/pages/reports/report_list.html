@@ -8,9 +8,9 @@
       Reports & Announcements
       {% comment %} Count unviewed for regular users {% endcomment %}
       {% if role_name not in 'president,general secretary,treasurer' %}
-        {% with unviewed_count=reports|length %}
+        {% with unviewed_count=reports_info|length %}
         <span class="badge bg-danger ms-2">
-          {{ unviewed_count }} Not Viewed
+          {{ reports_info|length }} Not Viewed
         </span>
         {% endwith %}
       {% endif %}
@@ -24,33 +24,36 @@
     {% endif %}
   </div>
 
-  {% if role_name in 'president,general secretary,treasurer' %}
-  <!-- Executive table: show who viewed -->
+  <!-- Reports Table -->
   <div class="card shadow-sm rounded-4">
     <div class="card-body">
       <table class="table table-hover align-middle">
         <thead class="table-light">
           <tr>
-            <th>Report</th>
+            <th>Report About</th>
             <th>Date Uploaded</th>
             <th>Uploaded By</th>
+            {% if role_name in 'president,general secretary,treasurer' %}
             <th>Viewed By</th>
+            {% endif %}
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for info in reports_info %}
-          <tr>
+          <tr {% if not info.user_viewed and role_name not in 'president,general secretary,treasurer' %} class="table-warning" {% endif %}>
             <td>{{ info.report.report_about }}</td>
             <td>{{ info.report.created_at|date:"M d, Y" }}</td>
             <td>{{ info.report.user.username }}</td>
+            {% if role_name in 'president,general secretary,treasurer' %}
             <td>
-              {% for rv in info.report.reportview_set.all %}
-                {{ rv.user.username }}{% if rv.user == request.user %} (You){% endif %} <br>
+              {% for rv in info.viewed_by_users %}
+                {{ rv.user.username }}{% if rv.user == request.user %} (You){% endif %}<br>
               {% empty %}
                 No views yet
               {% endfor %}
             </td>
+            {% endif %}
             <td>
               <a href="?view_id={{ info.report.id }}" class="btn btn-outline-info btn-sm">View</a>
               <a href="{% url 'download_report' info.report.id %}" class="btn btn-outline-success btn-sm">⬇️ Download</a>
@@ -58,58 +61,16 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="5" class="text-center text-muted">No reports available.</td>
+            <td colspan="5" class="text-center text-muted">No reports available yet.</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
-
-  {% else %}
-  <!-- Regular users table -->
-  <div class="card shadow-sm rounded-4">
-    <div class="card-body">
-      <table class="table table-hover align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Report</th>
-            <th>Date Uploaded</th>
-            <th>Uploaded By</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for report in reports %}
-          {% comment %} Highlight unviewed reports {% endcomment %}
-          {% with viewed=report.reportview_set.filter(user=request.user).exists %}
-          <tr {% if not viewed %}class="table-warning"{% endif %}>
-            <td>{{ report.report_about }}</td>
-            <td>{{ report.created_at|date:"M d, Y" }}</td>
-            <td>{{ report.user.username }}</td>
-            <td>
-              <a href="?view_id={{ report.id }}" class="btn btn-outline-info btn-sm">
-                View
-              </a>
-              <a href="{% url 'download_report' report.id %}" class="btn btn-outline-success btn-sm">
-                ⬇️ Download
-              </a>
-            </td>
-          </tr>
-          {% endwith %}
-          {% empty %}
-          <tr>
-            <td colspan="4" class="text-center text-muted">No reports available.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {% endif %}
 </div>
 
-<!-- 📤 Modal Form -->
+<!-- 📤 Modal Form for Upload -->
 <div class="modal fade" id="addReportModal" tabindex="-1" aria-labelledby="addReportModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-4 shadow-lg">
