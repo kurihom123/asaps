@@ -49,8 +49,9 @@ def report_list(request):
             'user_viewed': user_viewed
         })
 
-    # Determine role
-    role_name = user.user_profile.first.position.name.lower() if hasattr(user, 'user_profile') else ''
+    # Determine role safely
+    profile = user.user_profile.first() if user.user_profile.exists() else None
+    role_name = profile.position.name.lower() if profile else ''
 
     context = {
         'reports_info': reports_info,
@@ -58,7 +59,6 @@ def report_list(request):
         'role_name': role_name,
     }
     return render(request, 'pages/reports/report_list.html', context)
-
 
 
 @login_required
