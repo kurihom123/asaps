@@ -50,7 +50,7 @@
         </thead>
         <tbody>
           {% for info in reports_info %}
-          <tr {% if not info.user_viewed and role_name not in ['president', 'general secretary', 'treasurer'] %} class="table-warning" {% endif %}>
+          <tr {% if not info.user_viewed and role_name not in top_positions %} class="table-warning" {% endif %}>
             <td>{{ info.report.report_about }}</td>
             <td>{{ info.report.created_at|date:"M d, Y" }}</td>
             <td>{{ info.report.user.username }}</td>
@@ -86,7 +86,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="{% if role_name in ['president', 'general secretary', 'treasurer'] %}5{% else %}4{% endif %}" class="text-center text-muted">
+            <td colspan="{% if role_name in top_positions %}5{% else %}4{% endif %}" class="text-center text-muted">
               No reports available yet.
             </td>
           </tr>
