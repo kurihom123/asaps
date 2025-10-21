@@ -46,7 +46,18 @@
           <tr {% if not info.user_viewed and role_name not in top_positions %} class="table-warning" {% endif %}>
             <td>{{ info.report.report_about }}</td>
             <td>{{ info.report.created_at|date:"M d, Y" }}</td>
-            <td>{{ info.report.user.username }}</td>
+            <td>
+                {{ info.report.user.username }}
+                {% with uploader_profile=info.report.user.user_profile.first %}
+                    {% if uploader_profile %}
+                    <small class="text-muted d-block">
+                        {{ uploader_profile.position.name }}
+                    </small>
+                    {% else %}
+                    <small class="text-muted d-block">No position</small>
+                    {% endif %}
+                {% endwith %}
+            </td>
 
             {% if role_name in top_positions %}
               <td>
