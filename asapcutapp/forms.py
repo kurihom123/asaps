@@ -42,3 +42,14 @@ class ReportUploadForm(forms.ModelForm):
     class Meta:
         model = Report
         fields = ['report_about', 'report_file']
+        widgets = {
+            'report_about': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter report title or description...'
+            }),
+            'report_file': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'application/pdf'
+            }),
+        }
+

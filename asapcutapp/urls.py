@@ -47,5 +47,9 @@ urlpatterns = [
     path('my-arrears/', my_arrears, name='my_arrears'),
 
     path('reports/', report_list, name='report_list'),
+    path('reports/add/', add_report, name='add_report'),
+    path('reports/<int:report_id>/download/', download_report, name='download_report'),
+
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
