@@ -7,6 +7,10 @@ from asapcutapp.models import Report, ReportView
 from django.utils import timezone
 from ..forms import ReportUploadForm
 
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 @login_required
 def report_list(request):
     user = request.user
@@ -43,10 +47,14 @@ def report_list(request):
     for report in reports:
         viewed_by = ReportView.objects.filter(report=report).order_by('-viewed_at')
         user_viewed = viewed_by.filter(user=user).exists()
+        # Users who have not viewed
+        all_users = User.objects.all()
+        not_viewed_users = all_users.exclude(id__in=viewed_by.values_list('user_id', flat=True))
         reports_info.append({
             'report': report,
             'viewed_by_users': viewed_by,
-            'user_viewed': user_viewed
+            'user_viewed': user_viewed,
+            'not_viewed_users': not_viewed_users
         })
 
     # Determine role safely

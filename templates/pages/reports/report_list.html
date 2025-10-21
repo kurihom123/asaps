@@ -4,7 +4,7 @@
 
 <div class="container mt-4">
 
-  <!-- Display success/error messages -->
+  <!-- Messages -->
   {% if messages %}
     {% for message in messages %}
       <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -19,9 +19,7 @@
       Reports & Announcements
       {% if role_name not in top_positions %}
         {% with unviewed_count=reports_info|length %}
-        <span class="badge bg-danger ms-2">
-          {{ reports_info|length }} Not Viewed
-        </span>
+          <span class="badge bg-danger ms-2">{{ unviewed_count }} Not Viewed</span>
         {% endwith %}
       {% endif %}
     </h4>
@@ -42,8 +40,8 @@
             <th>Report About</th>
             <th>Date Uploaded</th>
             <th>Uploaded By</th>
-            {% if role_name not in top_positions %}
-            <th>Viewed By</th>
+            {% if role_name in top_positions %}
+              <th>Views</th>
             {% endif %}
             <th>Actions</th>
           </tr>
@@ -55,33 +53,17 @@
             <td>{{ info.report.created_at|date:"M d, Y" }}</td>
             <td>{{ info.report.user.username }}</td>
 
-            {% if role_name not in top_positions %}
-            <td>
-              {% if info.viewed_by_users %}
-                <ul class="list-unstyled mb-0">
-                  {% for rv in info.viewed_by_users %}
-                    <li>
-                      {{ rv.user.username }}{% if rv.user == request.user %} (You){% endif %} - {{ rv.viewed_at|date:"M d, Y H:i" }}
-                    </li>
-                  {% endfor %}
-                </ul>
-              {% else %}
-                <span class="text-muted">No views yet</span>
-              {% endif %}
-            </td>
+            {% if role_name in top_positions %}
+              <td>
+                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#viewsModal{{ info.report.id }}">
+                  Views
+                </button>
+              </td>
             {% endif %}
 
             <td>
-              <!-- View button -->
               <a href="?view_id={{ info.report.id }}" class="btn btn-outline-info btn-sm">View</a>
-              <!-- Download button -->
               <a href="{% url 'download_report' info.report.id %}" class="btn btn-outline-success btn-sm">⬇️ Download</a>
-              {% if role_name not in top_positions %}
-              <!-- Views button for top users -->
-              <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#viewsModal{{ info.report.id }}">
-                Views
-              </button>
-              {% endif %}
             </td>
           </tr>
           {% empty %}
@@ -103,7 +85,7 @@
     <div class="modal-content rounded-4 shadow-lg">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title" id="addReportModalLabel">Upload New Report</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" enctype="multipart/form-data" action="{% url 'add_report' %}">
         {% csrf_token %}
@@ -126,19 +108,21 @@
   </div>
 </div>
 
-<!-- Views Modals for top users -->
+<!-- Views Modal for top users -->
 {% for info in reports_info %}
-  {% if role_name not in top_positions %}
+  {% if role_name in top_positions %}
   <div class="modal fade" id="viewsModal{{ info.report.id }}" tabindex="-1" aria-labelledby="viewsModalLabel{{ info.report.id }}" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content rounded-4 shadow-lg">
         <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title" id="viewsModalLabel{{ info.report.id }}">Users Who Viewed "{{ info.report.report_about }}"</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title" id="viewsModalLabel{{ info.report.id }}">
+            Users Who Viewed "{{ info.report.report_about }}"
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           {% if info.viewed_by_users %}
-            <ul class="list-group">
+            <ul class="list-group mb-2">
               {% for rv in info.viewed_by_users %}
                 <li class="list-group-item">
                   {{ rv.user.username }}{% if rv.user == request.user %} (You) {% endif %} - {{ rv.viewed_at|date:"M d, Y H:i" }}
@@ -147,6 +131,15 @@
             </ul>
           {% else %}
             <p class="text-muted">No views yet.</p>
+          {% endif %}
+
+          {% if info.not_viewed_users %}
+            <h6>Not Viewed:</h6>
+            <ul class="list-group">
+              {% for u in info.not_viewed_users %}
+                <li class="list-group-item text-danger">{{ u.username }}</li>
+              {% endfor %}
+            </ul>
           {% endif %}
         </div>
         <div class="modal-footer">
@@ -162,13 +155,8 @@
 function markViewed(reportId) {
   fetch(`/reports/${reportId}/mark-viewed/`, {
     method: 'POST',
-    headers: {
-      'X-CSRFToken': '{{ csrf_token }}'
-    }
-  }).then(() => {
-    // Reload page to show "You viewed this document" message immediately
-    location.reload();
-  });
+    headers: {'X-CSRFToken': '{{ csrf_token }}'}
+  }).then(() => location.reload());
 }
 </script>
 
