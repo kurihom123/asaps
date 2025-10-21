@@ -6,25 +6,74 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="fw-bold">
       Reports & Announcements
-      {% if unread_reports.count > 0 %}
-        <span class="badge bg-danger ms-2">{{ unread_reports.count }} Unread</span>
+      {% comment %} Count unviewed for regular users {% endcomment %}
+      {% if role_name not in 'president,general secretary,treasurer' %}
+        {% with unviewed_count=reports|length %}
+        <span class="badge bg-danger ms-2">
+          {{ unviewed_count }} Not Viewed
+        </span>
+        {% endwith %}
       {% endif %}
     </h4>
-    
-    {% if request.user.is_staff and request.user.user_profile.first.position.name|lower == 'treasurer' %}
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReportModal">
+
+    {% comment %} Add Report button for Treasurer only {% endcomment %}
+    {% if request.user.is_staff and role_name == 'treasurer' %}
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReportModal">
         Add Report
       </button>
     {% endif %}
   </div>
 
-  <!-- Table -->
+  {% if role_name in 'president,general secretary,treasurer' %}
+  <!-- Executive table: show who viewed -->
   <div class="card shadow-sm rounded-4">
     <div class="card-body">
       <table class="table table-hover align-middle">
         <thead class="table-light">
           <tr>
-            <th>Report About</th>
+            <th>Report</th>
+            <th>Date Uploaded</th>
+            <th>Uploaded By</th>
+            <th>Viewed By</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for info in reports_info %}
+          <tr>
+            <td>{{ info.report.report_about }}</td>
+            <td>{{ info.report.created_at|date:"M d, Y" }}</td>
+            <td>{{ info.report.user.username }}</td>
+            <td>
+              {% for rv in info.report.reportview_set.all %}
+                {{ rv.user.username }}{% if rv.user == request.user %} (You){% endif %} <br>
+              {% empty %}
+                No views yet
+              {% endfor %}
+            </td>
+            <td>
+              <a href="?view_id={{ info.report.id }}" class="btn btn-outline-info btn-sm">View</a>
+              <a href="{% url 'download_report' info.report.id %}" class="btn btn-outline-success btn-sm">⬇️ Download</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">No reports available.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- Regular users table -->
+  <div class="card shadow-sm rounded-4">
+    <div class="card-body">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Report</th>
             <th>Date Uploaded</th>
             <th>Uploaded By</th>
             <th>Actions</th>
@@ -32,34 +81,32 @@
         </thead>
         <tbody>
           {% for report in reports %}
-          <tr {% if report.id in unread_ids %} class="table-warning" {% endif %}>
+          {% comment %} Highlight unviewed reports {% endcomment %}
+          {% with viewed=report.reportview_set.filter(user=request.user).exists %}
+          <tr {% if not viewed %}class="table-warning"{% endif %}>
             <td>{{ report.report_about }}</td>
             <td>{{ report.created_at|date:"M d, Y" }}</td>
             <td>{{ report.user.username }}</td>
             <td>
-              <!-- View button -->
-              <a href="{{ report.report_file.url }}" target="_blank"
-                 class="btn btn-outline-info btn-sm me-2"
-                 onclick="markViewed({{ report.id }})">
+              <a href="?view_id={{ report.id }}" class="btn btn-outline-info btn-sm">
                 View
               </a>
-
-              <!-- Download button -->
-              <a href="{% url 'download_report' report.id %}"
-                 class="btn btn-outline-success btn-sm">
+              <a href="{% url 'download_report' report.id %}" class="btn btn-outline-success btn-sm">
                 ⬇️ Download
               </a>
             </td>
           </tr>
+          {% endwith %}
           {% empty %}
           <tr>
-            <td colspan="4" class="text-center text-muted">No reports available yet.</td>
+            <td colspan="4" class="text-center text-muted">No reports available.</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
+  {% endif %}
 </div>
 
 <!-- 📤 Modal Form -->
@@ -90,7 +137,6 @@
     </div>
   </div>
 </div>
-
 
 <script>
 function markViewed(reportId) {

@@ -11,6 +11,12 @@ from ..forms import ReportUploadForm
 def report_list(request):
     user = request.user
     upload_form = ReportUploadForm()
+
+    # Detect role for special viewing
+    role_name = getattr(getattr(getattr(user, 'user_profile', None), 'first', None), 'position', None)
+    role_name = getattr(role_name, 'name', '').lower() if role_name else ''
+
+    # Handle POST upload (for treasurer)
     if request.method == "POST":
         upload_form = ReportUploadForm(request.POST, request.FILES)
         if upload_form.is_valid():
@@ -23,11 +29,12 @@ def report_list(request):
             messages.error(request, "Please check your form and try again.")
 
     # Handle Viewing (mark as viewed)
-    report_id = request.GET.get("view_id")
-    if report_id:
-        report = Report.objects.filter(id=report_id).first()
+    view_id = request.GET.get("view_id")
+    if view_id:
+        report = Report.objects.filter(id=view_id).first()
         if report:
             ReportView.objects.get_or_create(user=user, report=report)
+            messages.success(request, "You have viewed this document.")
             return FileResponse(open(report.report_file.path, 'rb'), content_type='application/pdf')
 
     # Handle Download
@@ -37,19 +44,27 @@ def report_list(request):
         if report:
             return FileResponse(open(report.report_file.path, 'rb'), as_attachment=True)
 
-    # Reports + Unread logic
+    # Get reports
     reports = Report.objects.all().order_by('-created_at')
-    viewed_reports = ReportView.objects.filter(user=user).values_list('report_id', flat=True)
-    unread_reports = reports.exclude(id__in=viewed_reports)
+
+    # Build a view info dictionary for admins
+    reports_info = []
+    for report in reports:
+        viewed_by_ids = ReportView.objects.filter(report=report).values_list('user_id', flat=True)
+        viewed_users = {rv.user.username: rv.user_id in viewed_by_ids for rv in ReportView.objects.filter(report=report)}
+        reports_info.append({
+            'report': report,
+            'viewed_by_ids': list(viewed_by_ids),
+        })
 
     context = {
         'reports': reports,
-        'unread_reports': unread_reports,
-        'unread_ids': list(unread_reports.values_list('id', flat=True)),
+        'reports_info': reports_info,
+        'role_name': role_name,
         'upload_form': upload_form
     }
-
     return render(request, 'pages/reports/report_list.html', context)
+
 
 @login_required
 def add_report(request):
