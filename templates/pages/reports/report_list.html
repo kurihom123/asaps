@@ -17,7 +17,7 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="fw-bold">
       Reports & Announcements
-      {% if role_name not in ['president', 'general secretary', 'treasurer'] %}
+      {% if role_name not in top_positions %}
         {% with unviewed_count=reports_info|length %}
         <span class="badge bg-danger ms-2">
           {{ reports_info|length }} Not Viewed
@@ -42,7 +42,7 @@
             <th>Report About</th>
             <th>Date Uploaded</th>
             <th>Uploaded By</th>
-            {% if role_name in ['president', 'general secretary', 'treasurer'] %}
+            {% if role_name not in top_positions %}
             <th>Viewed By</th>
             {% endif %}
             <th>Actions</th>
@@ -55,7 +55,7 @@
             <td>{{ info.report.created_at|date:"M d, Y" }}</td>
             <td>{{ info.report.user.username }}</td>
 
-            {% if role_name in ['president', 'general secretary', 'treasurer'] %}
+            {% if role_name not in top_positions %}
             <td>
               {% if info.viewed_by_users %}
                 <ul class="list-unstyled mb-0">
@@ -76,7 +76,7 @@
               <a href="?view_id={{ info.report.id }}" class="btn btn-outline-info btn-sm">View</a>
               <!-- Download button -->
               <a href="{% url 'download_report' info.report.id %}" class="btn btn-outline-success btn-sm">⬇️ Download</a>
-              {% if role_name in ['president', 'general secretary', 'treasurer'] %}
+              {% if role_name not in top_positions %}
               <!-- Views button for top users -->
               <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#viewsModal{{ info.report.id }}">
                 Views
@@ -128,7 +128,7 @@
 
 <!-- Views Modals for top users -->
 {% for info in reports_info %}
-  {% if role_name in ['president', 'general secretary', 'treasurer'] %}
+  {% if role_name not in top_positions %}
   <div class="modal fade" id="viewsModal{{ info.report.id }}" tabindex="-1" aria-labelledby="viewsModalLabel{{ info.report.id }}" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content rounded-4 shadow-lg">

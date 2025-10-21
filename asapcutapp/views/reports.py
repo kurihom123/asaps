@@ -52,11 +52,13 @@ def report_list(request):
     # Determine role safely
     profile = user.user_profile.first() if user.user_profile.exists() else None
     role_name = profile.position.name.lower() if profile else ''
+    top_positions = ['president', 'general secretary', 'treasurer']
 
     context = {
         'reports_info': reports_info,
         'upload_form': upload_form,
         'role_name': role_name,
+        'top_positions': top_positions,
     }
     return render(request, 'pages/reports/report_list.html', context)
 
