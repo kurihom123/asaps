@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -50,3 +51,30 @@ class UserLog(models.Model):
 
     def __str__(self):
         return self.activity
+
+
+
+class Report(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='uploaded_reports')
+    report_about = models.CharField(max_length=150)
+    report_file = models.FileField(upload_to='reports/')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'report'
+
+    def __str__(self):
+        return self.report_about
+
+
+class ReportView(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    report = models.ForeignKey(Report, on_delete=models.CASCADE)
+    viewed_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'report_views'
+        unique_together = ('user', 'report')
+
+    def __str__(self):
+        return f'{self.user} viewed {self.report}'

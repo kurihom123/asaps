@@ -1,6 +1,7 @@
 from django import forms
 from .models import Contribution
 from .models import ContributionUpload
+from .models import Report
 
 class ContributionForm(forms.ModelForm):
     class Meta:
@@ -34,3 +35,10 @@ class ExcelUploadForm(forms.ModelForm):
             'year': forms.TextInput(attrs={'class': 'form-control'}),
             'excel_file': forms.FileInput(attrs={'class': 'form-control', 'accept': '.xlsx,.xls'})
         }
+
+
+
+class ReportUploadForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ['report_about', 'report_file']

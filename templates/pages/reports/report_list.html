@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold">
+      Reports & Announcements
+      {% if unread_reports.count > 0 %}
+        <span class="badge bg-danger ms-2">{{ unread_reports.count }} Unread</span>
+      {% endif %}
+    </h4>
+
+    {% if request.user.user_profile.position.position_name|lower == 'treasurer' %}
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReportModal">
+        Add Report
+      </button>
+    {% endif %}
+  </div>
+
+  <!-- Table -->
+  <div class="card shadow-sm rounded-4">
+    <div class="card-body">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Report About</th>
+            <th>Date Uploaded</th>
+            <th>Uploaded By</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for report in reports %}
+          <tr {% if report.id in unread_ids %} class="table-warning" {% endif %}>
+            <td>{{ report.report_about }}</td>
+            <td>{{ report.created_at|date:"M d, Y" }}</td>
+            <td>{{ report.user.username }}</td>
+            <td>
+              <!-- View button -->
+              <a href="{{ report.report_file.url }}" target="_blank"
+                 class="btn btn-outline-info btn-sm me-2"
+                 onclick="markViewed({{ report.id }})">
+                View
+              </a>
+
+              <!-- Download button -->
+              <a href="{% url 'download_report' report.id %}"
+                 class="btn btn-outline-success btn-sm">
+                ⬇️ Download
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-center text-muted">No reports available yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 📤 Modal Form -->
+<div class="modal fade" id="addReportModal" tabindex="-1" aria-labelledby="addReportModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="addReportModalLabel">Upload New Report</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" enctype="multipart/form-data" action="{% url 'add_report' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="report_about" class="form-label">Report Title / About</label>
+            <input type="text" name="report_about" class="form-control" placeholder="e.g. 2023-2025 Expenditures Report" required>
+          </div>
+          <div class="mb-3">
+            <label for="report_file" class="form-label">Attach Report (PDF only)</label>
+            <input type="file" name="report_file" accept="application/pdf" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script>
+function markViewed(reportId) {
+  fetch(`/reports/${reportId}/mark-viewed/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}'
+    }
+  });
+}
+</script>
+
+{% endblock %}

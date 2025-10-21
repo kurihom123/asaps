@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from asapcutapp.models.user_model import UserProfile, UserLog, Level
+from asapcutapp.models.user_model import UserProfile, UserLog, Level, Report, ReportView
 
 
 class LevelAdmin(admin.ModelAdmin):
@@ -25,3 +25,19 @@ class UserLogAdmin(admin.ModelAdmin):
 
 
 admin.site.register(UserLog, UserLogAdmin)
+
+
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ('user', 'report_about', 'report_file', 'created_at')
+    list_filter = ('report_about',)
+
+
+admin.site.register(Report, ReportAdmin)
+
+
+class ReportViewAdmin(admin.ModelAdmin):
+    list_display = ('user', 'report', 'viewed_at')
+    list_filter = ('report',)
+
+
+admin.site.register(ReportView, ReportViewAdmin)

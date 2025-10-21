@@ -12,6 +12,7 @@ from .views.universities import university_list, add_university, update_universi
 from .views.association import association_list, add_association, update_association, delete_association
 from .views.contribution import contribution_list, handle_excel_upload, contributions_pdf, contributions_excel, my_contributions,my_arrears
 from .views.users_list import users_list
+from .views.reports import *
 
 urlpatterns = [
     path('', base, name='base'),
@@ -45,5 +46,6 @@ urlpatterns = [
     path('my-contributions/', my_contributions, name='my_contributions'),
     path('my-arrears/', my_arrears, name='my_arrears'),
 
+    path('reports/', report_list, name='report_list'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
