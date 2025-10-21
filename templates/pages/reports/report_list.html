@@ -47,7 +47,7 @@
             <td>{{ info.report.report_about }}</td>
             <td>{{ info.report.created_at|date:"M d, Y" }}</td>
             <td>
-                {{ info.report.user.first_name }}
+                {{ info.report.user.first_name }} {{ info.report.user.last_name }}
                 {% with uploader_profile=info.report.user.user_profile.first %}
                     {% if uploader_profile %}
                     <small class="text-muted d-block">
