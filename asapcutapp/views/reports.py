@@ -6,7 +6,9 @@ from django.db.models import Q
 from asapcutapp.models import Report, ReportView
 from django.utils import timezone
 from ..forms import ReportUploadForm
-
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -62,6 +64,19 @@ def report_list(request):
     return render(request, 'pages/reports/report_list.html', context)
 
 
+@login_required
+@require_POST
+def mark_report_viewed(request, report_id):
+    """
+    This endpoint records that a user viewed a given report.
+    """
+    try:
+        report = Report.objects.get(id=report_id)
+        ReportView.objects.get_or_create(user=request.user, report=report)
+        return JsonResponse({'status': 'success'})
+    except Report.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Report not found'}, status=404)
+    
 @login_required
 def add_report(request):
     user = request.user

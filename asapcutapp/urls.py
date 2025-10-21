@@ -48,6 +48,7 @@ urlpatterns = [
 
     path('reports/', report_list, name='report_list'),
     path('reports/add/', add_report, name='add_report'),
+    path('reports/<int:report_id>/mark-viewed/', mark_report_viewed, name='mark_report_viewed'),
     path('reports/<int:report_id>/download/', download_report, name='download_report'),
 
 

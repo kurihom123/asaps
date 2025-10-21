@@ -17,11 +17,6 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="fw-bold">
       Reports & Announcements
-      {% if role_name not in top_positions %}
-        {% with unviewed_count=reports_info|length %}
-          <span class="badge bg-danger ms-2">{{ unviewed_count }} Not Viewed</span>
-        {% endwith %}
-      {% endif %}
     </h4>
 
     {% if request.user.is_staff and request.user.user_profile.first.position.name|lower == 'treasurer' %}
@@ -159,10 +154,19 @@ function fetchView(reportId) {
     fetch(`/reports/${reportId}/mark-viewed/`, {
         method: 'POST',
         headers: {
-            'X-CSRFToken': '{{ csrf_token }}'
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Accept': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status !== 'success') {
+            console.error("Failed to record view:", data.message);
         }
-    });
+    })
+    .catch(err => console.error("Error:", err));
 }
 </script>
+
 
 {% endblock %}
