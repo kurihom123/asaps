@@ -17,7 +17,7 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="fw-bold">
       Reports & Announcements
-      {% if role_name not in 'president,general secretary,treasurer' %}
+      {% if role_name not in ['president', 'general secretary', 'treasurer'] %}
         {% with unviewed_count=reports_info|length %}
         <span class="badge bg-danger ms-2">
           {{ reports_info|length }} Not Viewed
@@ -42,7 +42,7 @@
             <th>Report About</th>
             <th>Date Uploaded</th>
             <th>Uploaded By</th>
-            {% if role_name in 'president,general secretary,treasurer' %}
+            {% if role_name in ['president', 'general secretary', 'treasurer'] %}
             <th>Viewed By</th>
             {% endif %}
             <th>Actions</th>
@@ -50,27 +50,45 @@
         </thead>
         <tbody>
           {% for info in reports_info %}
-          <tr {% if not info.user_viewed and role_name not in 'president,general secretary,treasurer' %} class="table-warning" {% endif %}>
+          <tr {% if not info.user_viewed and role_name not in ['president', 'general secretary', 'treasurer'] %} class="table-warning" {% endif %}>
             <td>{{ info.report.report_about }}</td>
             <td>{{ info.report.created_at|date:"M d, Y" }}</td>
             <td>{{ info.report.user.username }}</td>
-            {% if role_name in 'president,general secretary,treasurer' %}
+
+            {% if role_name in ['president', 'general secretary', 'treasurer'] %}
             <td>
-              {% for rv in info.viewed_by_users %}
-                {{ rv.user.username }}{% if rv.user == request.user %} (You){% endif %}<br>
-              {% empty %}
-                No views yet
-              {% endfor %}
+              {% if info.viewed_by_users %}
+                <ul class="list-unstyled mb-0">
+                  {% for rv in info.viewed_by_users %}
+                    <li>
+                      {{ rv.user.username }}{% if rv.user == request.user %} (You){% endif %} - {{ rv.viewed_at|date:"M d, Y H:i" }}
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <span class="text-muted">No views yet</span>
+              {% endif %}
             </td>
             {% endif %}
+
             <td>
+              <!-- View button -->
               <a href="?view_id={{ info.report.id }}" class="btn btn-outline-info btn-sm">View</a>
+              <!-- Download button -->
               <a href="{% url 'download_report' info.report.id %}" class="btn btn-outline-success btn-sm">⬇️ Download</a>
+              {% if role_name in ['president', 'general secretary', 'treasurer'] %}
+              <!-- Views button for top users -->
+              <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#viewsModal{{ info.report.id }}">
+                Views
+              </button>
+              {% endif %}
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="5" class="text-center text-muted">No reports available yet.</td>
+            <td colspan="{% if role_name in ['president', 'general secretary', 'treasurer'] %}5{% else %}4{% endif %}" class="text-center text-muted">
+              No reports available yet.
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -108,6 +126,38 @@
   </div>
 </div>
 
+<!-- Views Modals for top users -->
+{% for info in reports_info %}
+  {% if role_name in ['president', 'general secretary', 'treasurer'] %}
+  <div class="modal fade" id="viewsModal{{ info.report.id }}" tabindex="-1" aria-labelledby="viewsModalLabel{{ info.report.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 shadow-lg">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="viewsModalLabel{{ info.report.id }}">Users Who Viewed "{{ info.report.report_about }}"</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {% if info.viewed_by_users %}
+            <ul class="list-group">
+              {% for rv in info.viewed_by_users %}
+                <li class="list-group-item">
+                  {{ rv.user.username }}{% if rv.user == request.user %} (You) {% endif %} - {{ rv.viewed_at|date:"M d, Y H:i" }}
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted">No views yet.</p>
+          {% endif %}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+{% endfor %}
+
 <script>
 function markViewed(reportId) {
   fetch(`/reports/${reportId}/mark-viewed/`, {
@@ -116,7 +166,7 @@ function markViewed(reportId) {
       'X-CSRFToken': '{{ csrf_token }}'
     }
   }).then(() => {
-    // Optional: reload page to show "You viewed this document" message immediately
+    // Reload page to show "You viewed this document" message immediately
     location.reload();
   });
 }

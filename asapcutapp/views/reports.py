@@ -10,11 +10,9 @@ from ..forms import ReportUploadForm
 @login_required
 def report_list(request):
     user = request.user
-    upload_form = ReportUploadForm()
 
-    # Detect role
-    role_name = getattr(getattr(getattr(user, 'user_profile', None), 'first', None), 'position', None)
-    role_name = getattr(role_name, 'name', '').lower() if role_name else ''
+    # Form
+    upload_form = ReportUploadForm()
 
     # Handle POST upload
     if request.method == "POST":
@@ -28,42 +26,39 @@ def report_list(request):
         else:
             messages.error(request, "Please check your form and try again.")
 
-    # Handle Viewing
+    # Handle viewing
     view_id = request.GET.get("view_id")
     if view_id:
         report = Report.objects.filter(id=view_id).first()
         if report:
             ReportView.objects.get_or_create(user=user, report=report)
             messages.success(request, "You have viewed this document.")
-            return FileResponse(open(report.report_file.path, 'rb'), content_type='application/pdf')
+            return redirect('report_list')
 
-    # Handle Download
-    download_id = request.GET.get("download_id")
-    if download_id:
-        report = Report.objects.filter(id=download_id).first()
-        if report:
-            return FileResponse(open(report.report_file.path, 'rb'), as_attachment=True)
-
-    # Get reports and precompute viewed info
+    # Reports
     reports = Report.objects.all().order_by('-created_at')
+
+    # Prepare info for template
     reports_info = []
     for report in reports:
-        viewed_by_ids = ReportView.objects.filter(report=report).values_list('user_id', flat=True)
-        viewed_by_users = ReportView.objects.filter(report=report)
-        # For regular user check if they viewed this report
-        user_viewed = ReportView.objects.filter(report=report, user=user).exists()
+        viewed_by = ReportView.objects.filter(report=report).order_by('-viewed_at')
+        user_viewed = viewed_by.filter(user=user).exists()
         reports_info.append({
             'report': report,
-            'viewed_by_users': viewed_by_users,
-            'user_viewed': user_viewed,
+            'viewed_by_users': viewed_by,
+            'user_viewed': user_viewed
         })
+
+    # Determine role
+    role_name = user.user_profile.first.position.name.lower() if hasattr(user, 'user_profile') else ''
 
     context = {
         'reports_info': reports_info,
+        'upload_form': upload_form,
         'role_name': role_name,
-        'upload_form': upload_form
     }
     return render(request, 'pages/reports/report_list.html', context)
+
 
 
 @login_required
